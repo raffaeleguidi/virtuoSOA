@@ -21,20 +21,30 @@ import play.libs.F.Promise;
 import play.api.mvc.Request;
 import play.cache.Cache;
 
-public class Application extends Controller {
-	
+public class Proxy extends Controller {
+		
+	public Promise<Result> testAsync() {
+	    final Promise<Result> resultPromise = WS.url("http://google.com").get().map(
+	            new Function<WSResponse, Result>() {
+	                public Result apply(WSResponse response) {
+	                    return ok("Feed title:" + response.asJson().findPath("title"));
+	                }
+	            }
+	    );
+	    return resultPromise;
+	}
 	
 	private static Route findRoute(String source) {
 		Route route = (Route)Cache.get("route:" + source);
 		if (route == null) {
-			Logger.info("looking for " + source);
+			Logger.trace("looking for " + source);
 			route = Route.find.where().eq("source", source).findUnique();
 			if (null != route.timeout) {
 				route.timeout = 10000;
 			}
 			Cache.set("route:" + source, route, 60); // in cache per 60 secondi
 		}
-		Logger.info("got route with seed " + route.randomSeed);
+		Logger.trace("got route with seed " + route.randomSeed);
 		return route;
 	}
 
@@ -47,7 +57,7 @@ public class Application extends Controller {
     	return responseCache;
 	}
     
-    public static Result proxyGet(String path) throws Exception {
+    public static Result handleGet(String path) throws Exception {
     	
     	final Route route = findRoute(request().host());
     	
@@ -58,23 +68,23 @@ public class Application extends Controller {
 		final String cacheKey = "GET:" + Cache.getOrElse("source:" + route.randomSeed, new java.util.concurrent.Callable<String>() {
 			@Override
 			public String call() throws Exception {
-				Logger.info("saved in cache randomSeed " + route.randomSeed + " for route " + route.source);
+				Logger.trace("saved in cache randomSeed " + route.randomSeed + " for route " + route.source);
 				return "" + route.randomSeed;
 			}
 		}, 60) + request().host() + request().uri();
-		Logger.info("cacheKey=" + cacheKey);
+		Logger.trace("cacheKey=" + cacheKey);
 		ResponseCache responseCache = (ResponseCache)Cache.get(cacheKey);
 		if (responseCache == null) {
-        	Logger.info("sending get to downstream server " + beforeRequest);
+        	Logger.trace("sending get to downstream server " + beforeRequest);
         	downstreamResponse = holder.get().get(route.timeout);
         	responseCache = getResponse(downstreamResponse);
-        	Logger.info("received response from downstream server in " + (System.currentTimeMillis() - beforeRequest) +"ms " + System.currentTimeMillis());
+        	Logger.trace("received response from downstream server in " + (System.currentTimeMillis() - beforeRequest) +"ms " + System.currentTimeMillis());
         	if (route.cache > 0) {
         		Cache.set(cacheKey, responseCache, route.cache);
         		Logger.trace("saved in cache for " + route.cache + "s " + System.currentTimeMillis() );
         	}
 		} else {
-        	Logger.info("got response from cache " + System.currentTimeMillis() );
+        	Logger.trace("got response from cache " + System.currentTimeMillis() );
 		}
 
     	prepareResponse(responseCache);
@@ -108,7 +118,7 @@ public class Application extends Controller {
 		return holder;
 	}
     
-    public static Result proxyPost(String path) {
+    public static Result handlePost(String path) {
     	
     	Route route = findRoute(request().host());
     	

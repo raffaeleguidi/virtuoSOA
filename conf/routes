@@ -12,8 +12,8 @@ POST    /route                     			controllers.Administration.addRoute()
 POST    /saveroute                     		controllers.Administration.saveRoute()
 GET     /routes                    			controllers.Administration.getRoutes()
 
-GET     /							      	controllers.Application.proxyGet(path = "")
-POST    /                                 	controllers.Application.proxyPost(path = "")
-GET     /*path                           	controllers.Application.proxyGet(path)
-POST    /*path                           	controllers.Application.proxyPost(path)
+GET     /							      	controllers.Proxy.handleGet(path = "")
+POST    /                                 	controllers.Proxy.handlePost(path = "")
+GET     /*path                           	controllers.Proxy.handleGet(path)
+POST    /*path                           	controllers.Proxy.handlePost(path)
 
