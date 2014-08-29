@@ -1,0 +1,23 @@
+@(route: Route)
+
+@main("Add a new Route") {
+
+   	<p>
+   		<a href="@routes.Administration.getRoutes()">list</a>
+   	</p>
+
+	<form method="POST" action="@routes.Administration.saveRoute()">
+		<input type="hidden" name="id" value="@route.id"/>
+		<input type="hidden" name="randomSeed" value="@route.randomSeed"/>
+		<label>source</label>
+		<input type="text" name="source" value="@route.source" />
+		<label>destination</label>
+		<input type="text" name="destination" value="@route.destination" />
+		<label>timeout</label>
+		<input type="text" name="timeout" value="@route.timeout" />
+		<label>cache</label>
+		<input type="text" name="cache" value="@route.cache" />
+		<br />
+		<button>Save Route</button>
+	</form>
+}

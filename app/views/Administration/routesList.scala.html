@@ -1,0 +1,15 @@
+@(routeList: List[Route])
+
+@main("Routes list") {
+
+   	<p>
+   		<a href="@routes.Administration.route()">add route</a>
+   	</p>
+
+<h2>Routes list</h2>
+<ul>
+@for(route <- routeList) {
+  <li><a href="@routes.Administration.editRoute(route.id)">@route.source -> @route.destination</a> timeout=@route.timeout cache=@(route.cache)s</li>
+} 
+</ul>	
+}

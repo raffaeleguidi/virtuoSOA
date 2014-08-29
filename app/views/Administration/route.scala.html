@@ -1,0 +1,20 @@
+@()
+
+@main("Add a new Route") {
+   	<p>
+   		<a href="@routes.Administration.getRoutes()">list</a>
+   	</p>
+   	
+	<form method="POST" action="@routes.Administration.addRoute()">
+		<label>source</label>
+		<input type="text" name="source"/>
+		<label>destination</label>
+		<input type="text" name="destination"/>
+		<label>timeout</label>
+		<input type="text" name="timeout"/>
+		<label>cache</label>
+		<input type="text" name="cache"/>
+		<br />
+		<button>Add Route</button>
+	</form>
+}
