@@ -12,6 +12,9 @@ POST    /route                     			controllers.Administration.addRoute()
 POST    /saveroute                     		controllers.Administration.saveRoute()
 GET     /routes                    			controllers.Administration.getRoutes()
 
+GET     /google							    controllers.Proxy.testAsync()
+GET     /async								controllers.Proxy.asyncGetNoCache(url: String)
+
 GET     /							      	controllers.Proxy.handleGet(path = "")
 POST    /                                 	controllers.Proxy.handlePost(path = "")
 GET     /*path                           	controllers.Proxy.handleGet(path)

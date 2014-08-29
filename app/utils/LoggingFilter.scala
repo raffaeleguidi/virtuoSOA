@@ -27,7 +27,7 @@ object LoggingFilter extends Filter {
 		    }
 		)
 		
-	    Logger.info(s"request ${uuid} started at ${startTime}")
+	    Logger.trace(s"request ${uuid} started at ${startTime}")
 	    nextFilter(rhWithTraceId).map { result =>
 	      val endTime = System.currentTimeMillis
 	      val requestTime = endTime - startTime
@@ -40,7 +40,8 @@ object LoggingFilter extends Filter {
 		  .withHeaders(
 		      "Cache-Control" -> "no-cache, no-store, must-revalidate",
 		      "Pragma" -> "no-cache",
-		      "Expires" -> "0"
+		      "Expires" -> "0",
+		      "traceId" -> uuid
 		  )
 //		  .withHeaders("Request-Time" -> requestTime.toString, "traceId" -> uuid)
 	    }

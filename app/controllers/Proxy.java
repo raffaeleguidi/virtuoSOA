@@ -23,11 +23,24 @@ import play.cache.Cache;
 
 public class Proxy extends Controller {
 		
-	public Promise<Result> testAsync() {
+	public static Promise<Result> testAsync() {
 	    final Promise<Result> resultPromise = WS.url("http://google.com").get().map(
 	            new Function<WSResponse, Result>() {
 	                public Result apply(WSResponse response) {
-	                    return ok("Feed title:" + response.asJson().findPath("title"));
+	                	response().setContentType("text/html");
+	                    return ok(response.getBody());
+	                }
+	            }
+	    );
+	    return resultPromise;
+	}
+	
+	public static Promise<Result> asyncGetNoCache(String url) {
+	    final Promise<Result> resultPromise = WS.url(url).get().map(
+	            new Function<WSResponse, Result>() {
+	                public Result apply(WSResponse response) {
+	                	response().setContentType(response.getHeader("Content-Type"));
+	                	return status(response.getStatus(), response.getBody());
 	                }
 	            }
 	    );
@@ -72,6 +85,10 @@ public class Proxy extends Controller {
 				return "" + route.randomSeed;
 			}
 		}, 60) + request().host() + request().uri();
+		
+		if (route.cache == 0)
+			return asyncGetNoCache("http://" + route.destination + request().uri().replaceAll("%20", "+")).get(10000);
+		
 		Logger.trace("cacheKey=" + cacheKey);
 		ResponseCache responseCache = (ResponseCache)Cache.get(cacheKey);
 		if (responseCache == null) {
@@ -99,7 +116,7 @@ public class Proxy extends Controller {
 			response().setHeader(header.getKey(), header.getValue().get(0));
 			Logger.trace("response cache headers: " + header.getKey() + "=" + header.getValue().get(0));
 		}
-		response().setHeader("traceId", request().getHeader("traceId"));
+//		response().setHeader("traceId", request().getHeader("traceId"));
 		
 		for (Entry<String, String> header: response().getHeaders().entrySet()) {
 			Logger.trace("response headers: " + header.getKey() + "=" + header.getValue());
