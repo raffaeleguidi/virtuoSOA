@@ -1,3 +1,3 @@
-# Getting started with Play (Java)
+# The Virtuoso SOA Proxy/Accelerator
 
-This project demonstrate how to create a simple CRUD application with Play. A screencast to the project exist on [playframework.com](http://playframework.com)
+This project demonstrate how to create a simple but effective reverse proxy with routing and caching capabilities
