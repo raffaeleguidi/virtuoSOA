@@ -3,10 +3,10 @@
 @main("Edit Route") {
 
    	<p>
-   		<a href="@routes.Administration.getRoutes()">list</a>
+   		<a href="@routes.Administration.routesList()">list</a>
    	</p>
 
-	<form method="POST" action="@routes.Administration.saveRoute()">
+	<form method="POST" action="@routes.Administration.saveRoute">
 		<input type="hidden" name="id" value="@route.id"/>
 		<input type="hidden" name="randomSeed" value="@route.randomSeed"/>
 		<label>source</label>

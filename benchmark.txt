@@ -1,0 +1,80 @@
+ab -c 50 -n 10000 http://monitor.virtuoso:9000/
+
+Server Software:
+Server Hostname:        monitor.virtuoso
+Server Port:            9000
+
+Document Path:          /
+Document Length:        17773 bytes
+
+Concurrency Level:      50
+Time taken for tests:   115.501 seconds
+Complete requests:      10000
+Failed requests:        1
+   (Connect: 0, Receive: 0, Length: 1, Exceptions: 0)
+Write errors:           0
+Non-2xx responses:      1
+Total transferred:      180107662 bytes
+HTML transferred:       177718672 bytes
+Requests per second:    86.58 [#/sec] (mean)
+Time per request:       577.504 [ms] (mean)
+Time per request:       11.550 [ms] (mean, across all concurrent requests)
+Transfer rate:          1522.82 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.1      0       1
+Processing:     8  569 593.1    315   10051
+Waiting:        8  569 593.1    315   10051
+Total:          8  569 593.1    315   10051
+
+Percentage of the requests served within a certain time (ms)
+  50%    315
+  66%    609
+  75%    771
+  80%    910
+  90%   1219
+  95%   1666
+  98%   2313
+  99%   2610
+ 100%  10051 (longest request)
+
+
+ab -c 50 -n 10000 http://monitor.novirtuoso:9000/
+
+Server Software:
+Server Hostname:        monitor.novirtuoso
+Server Port:            3000
+
+Document Path:          /
+Document Length:        17773 bytes
+
+Concurrency Level:      50
+Time taken for tests:   99.407 seconds
+Complete requests:      10000
+Failed requests:        0
+Write errors:           0
+Total transferred:      179654888 bytes
+HTML transferred:       177774324 bytes
+Requests per second:    100.60 [#/sec] (mean)
+Time per request:       497.035 [ms] (mean)
+Time per request:       9.941 [ms] (mean, across all concurrent requests)
+Transfer rate:          1764.91 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    8 147.0      1    3010
+Processing:     7  475 735.9    308   10074
+Waiting:        4   50 199.9      5    9304
+Total:          7  484 749.4    308   10074
+
+Percentage of the requests served within a certain time (ms)
+  50%    308
+  66%    314
+  75%    609
+  80%    800
+  90%   1319
+  95%   2007
+  98%   2719
+  99%   3320
+ 100%  10074 (longest request)

@@ -2,18 +2,18 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+
+GET     /test                    			controllers.Administration.routesList
+# Home page
+GET     /route/new                          controllers.Administration.route
+GET     /route/:id                          controllers.Administration.editRoute(id: String)
+POST    /route/add                     		controllers.Administration.addRoute
+GET     /routes                    			controllers.Administration.routesList
+POST    /route/save                     	controllers.Administration.saveRoute
+
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
-
-# Home page
-GET     /route                           	controllers.Administration.route()
-GET     /route/:id                          controllers.Administration.editRoute(id: String)
-POST    /route                     			controllers.Administration.addRoute()
-POST    /saveroute                     		controllers.Administration.saveRoute()
-GET     /routes                    			controllers.Administration.getRoutes()
-
-#GET     /google							    controllers.Proxy.testAsync()
-#GET     /async								controllers.Proxy.asyncGetNoCache(url: String)
 
 GET     /							      	controllers.Proxy.handleGet(path = "")
 POST    /                                 	controllers.Proxy.handlePost(path = "")

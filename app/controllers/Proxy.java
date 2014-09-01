@@ -10,7 +10,6 @@ import play.data.Form;
 
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
 
 import play.db.ebean.Model;
 import static play.libs.Json.*;
@@ -60,55 +59,37 @@ public class Proxy extends Controller {
     public static Result handleGet(String path) throws Exception {
     	
     	final Route route = findRoute(request().host());
-    	
+		final String upstreamUrl = "http://" + route.destination + request().uri().replaceAll("%20", "+");
 		
-		final String cacheKey = "GET:" + Cache.getOrElse("source:" + route.randomSeed, new java.util.concurrent.Callable<String>() {
+		if (route.cache == 0)
+			return asyncGetNoCache(upstreamUrl).get(route.timeout);
+		else {
+			final String cacheKey = getCacheKey(route);
+			return getWithCache(upstreamUrl, route, cacheKey);
+		}
+    }
+
+    private static String getCacheKey(final Route route) throws Exception {
+		final String cacheKey =  "GET:" + Cache.getOrElse("source:" + route.randomSeed, new java.util.concurrent.Callable<String>() {
 			@Override
 			public String call() throws Exception {
 				Logger.trace("saved in cache randomSeed " + route.randomSeed + " for route " + route.source);
 				return "" + route.randomSeed;
 			}
 		}, 60) + request().host() + request().uri();
-		
-		
-		final String upstreamUrl = "http://" + route.destination + request().uri().replaceAll("%20", "+");
-		
-		if (route.cache == 0)
-			return asyncGetNoCache(upstreamUrl).get(route.timeout);
-		else {
-			return getWithCache(upstreamUrl, route, cacheKey);
-		}
-//		Logger.trace("cacheKey=" + cacheKey);
-//		ResponseCache responseCache = (ResponseCache)Cache.get(cacheKey);
-//		if (responseCache == null) {
-//        	Logger.trace("sending get to downstream server " + beforeRequest);
-//        	downstreamResponse = holder.get().get(route.timeout);
-//        	responseCache = getResponse(downstreamResponse);
-//        	Logger.trace("received response from downstream server in " + (System.currentTimeMillis() - beforeRequest) +"ms " + System.currentTimeMillis());
-//        	if (route.cache > 0) {
-//        		Cache.set(cacheKey, responseCache, route.cache);
-//        		Logger.trace("saved in cache for " + route.cache + "s " + System.currentTimeMillis() );
-//        	}
-//		} else {
-//        	Logger.trace("got response from cache " + System.currentTimeMillis() );
-//		}
-//
-//    	copyResponseHeaders(responseCache);
-//    	
-//        return play.mvc.Results.status(responseCache.status, responseCache.body);
+		return cacheKey;
     }
-
-	private static Route findRoute(String source) {
+    private static Route findRoute(String source) {
 		Route route = (Route)Cache.get("route:" + source);
 		if (route == null) {
 			Logger.trace("looking for " + source);
 			route = Route.find.where().eq("source", source).findUnique();
-			if (null != route.timeout) {
+			if (route != null &&  route.timeout != null) {
 				route.timeout = 10000;
 			}
 			Cache.set("route:" + source, route, 60); // in cache per 60 secondi
 		}
-		Logger.trace("got route with seed " + route.randomSeed);
+		if (route != null) Logger.trace("got route with seed " + route.randomSeed);
 		return route;
 	}
 

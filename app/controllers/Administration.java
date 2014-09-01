@@ -39,10 +39,10 @@ public class Administration extends Controller {
     	Route route = Form.form(Route.class).bindFromRequest().get();
     	route.randomSeed = Math.random();
     	route.save();
-    	return redirect(routes.Administration.getRoutes());
+    	return redirect(routes.Administration.routesList());
     }
 
-    public static Result getRoutes() {
+    public static Result routesList() {
     	List<Route> routes = (List<Route>)new Model.Finder(String.class, Route.class).all();
     	return ok(routesList.render(routes));
     }
