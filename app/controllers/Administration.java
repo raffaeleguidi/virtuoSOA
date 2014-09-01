@@ -16,6 +16,11 @@ import views.html.Administration.*;
 
 public class Administration extends Controller {
 	
+	public static Result startHC() {
+		utils.GettingStarted.test();
+		return ok("ok");
+	}
+	
     public static Result route() {
         return ok(route.render());
     }

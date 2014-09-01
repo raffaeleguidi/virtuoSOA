@@ -9,7 +9,7 @@ GET     /route/:id                           controllers.Administration.editRout
 POST    /route/add                     		controllers.Administration.addRoute
 GET     /routes                    			   controllers.Administration.routesList
 POST    /route/save                     	   controllers.Administration.saveRoute
-
+GET     /test                                controllers.Administration.startHC
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                        controllers.Assets.at(path="/public", file)
