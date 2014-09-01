@@ -20,8 +20,7 @@ import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.api.mvc.Request;
 import play.cache.Cache;
-import scala.Function0;
-import scala.concurrent.impl.Future;
+
 
 public class Proxy extends Controller {
 	
@@ -38,31 +37,6 @@ public class Proxy extends Controller {
 	    );
 	    return resultPromise;
 	}
-
-//	public static Promise<Result> asyncGetWithCache(String url, final Route route, final String cacheKey) {
-//		ResponseCache responseCache = (ResponseCache)Cache.get(cacheKey);
-//		if (responseCache == null) {
-//		    final Promise<Result> resultPromise = WS.url(url).get().map(
-//	            new Function<WSResponse, Result>() {
-//	                public Result apply(WSResponse response) {
-//	                	response().setContentType(response.getHeader("Content-Type"));
-//	                   	final ResponseCache responseCache = new ResponseCache();
-//	            		responseCache.body = response.getBody();
-//	                	responseCache.contentType = response.getHeader("Content-Type");
-//	                	responseCache.headers = response.getAllHeaders().entrySet();
-//	                	responseCache.status = response.getStatus();
-//	                	copyResponseHeaders(responseCache);
-//	                	Cache.set(cacheKey, responseCache, route.timeout);
-//	                	return status(responseCache.status, responseCache.body);
-//	                }
-//	            }
-//		    );
-//		    return resultPromise;
-//		} else {	
-//			return new F.Promise<Result>((scala.concurrent.Future<Result>) new SimpleResult(responseCache.status, responseCache.body));
-//			
-//		}
-//	}
 	
 	
 	public static Result getWithCache(String url, final Route route, final String cacheKey) {
@@ -77,6 +51,8 @@ public class Proxy extends Controller {
 	    	responseCache.status = response.getStatus();
 	    	copyResponseHeaders(responseCache);
 	    	Cache.set(cacheKey, responseCache, route.timeout);
+		} else {
+			response().setContentType(responseCache.contentType);
 		}
     	return status(responseCache.status, responseCache.body);
 	}

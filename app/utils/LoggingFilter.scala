@@ -17,7 +17,6 @@ object LoggingFilter extends Filter {
 	    val startTime = System.currentTimeMillis
 	    val uuid = createUuid()
 //	    val uuid = requestHeader.id.toString
-//	    val rhWithTraceId = requestHeader.copy(tags = requestHeader.tags + ("traceId" -> uuid))
 	    
 	    val rhWithTraceId = requestHeader.copy(
 		  headers =
@@ -43,7 +42,6 @@ object LoggingFilter extends Filter {
 		      "Expires" -> "0",
 		      "traceId" -> uuid
 		  )
-//		  .withHeaders("Request-Time" -> requestTime.toString, "traceId" -> uuid)
 	    }
 	  }
 }
