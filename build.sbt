@@ -1,11 +1,12 @@
-name := """virtuoso"""
+
+name := """virtuoSOA"""
 
 version := "1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava)
 
 libraryDependencies ++= Seq(
-  javaJdbc,
+  jdbc,
   javaEbean,
   javaWs,
   cache

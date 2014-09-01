@@ -3,20 +3,19 @@
 # ~~~~
 
 
-GET     /test                    			controllers.Administration.routesList
-# Home page
-GET     /route/new                          controllers.Administration.route
-GET     /route/:id                          controllers.Administration.editRoute(id: String)
+# routes administration
+GET     /route/new                           controllers.Administration.route
+GET     /route/:id                           controllers.Administration.editRoute(id: String)
 POST    /route/add                     		controllers.Administration.addRoute
-GET     /routes                    			controllers.Administration.routesList
-POST    /route/save                     	controllers.Administration.saveRoute
+GET     /routes                    			   controllers.Administration.routesList
+POST    /route/save                     	   controllers.Administration.saveRoute
 
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET     /assets/*file                        controllers.Assets.at(path="/public", file)
 
-GET     /							      	controllers.Proxy.handleGet(path = "")
-POST    /                                 	controllers.Proxy.handlePost(path = "")
-GET     /*path                           	controllers.Proxy.handleGet(path)
-POST    /*path                           	controllers.Proxy.handlePost(path)
-
+# reverse proxy
+GET     /							      	      controllers.Proxy.handleGet(path = "")
+#POST    /                                 	controllers.Proxy.handlePost(path = "")
+GET     /*path                           	   controllers.Proxy.handleGet(path)
+#POST    /*path                            	controllers.Proxy.handlePost(path)

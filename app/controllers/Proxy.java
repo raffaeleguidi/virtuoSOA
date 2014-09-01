@@ -20,10 +20,9 @@ import play.libs.F.Promise;
 import play.api.mvc.Request;
 import play.cache.Cache;
 
-
 public class Proxy extends Controller {
 	
-	public static Promise<Result> asyncGetNoCache(String url) {
+	public static Promise<Result> asyncGet(String url) {
 		final long beforeRequest = System.currentTimeMillis();
 	    final Promise<Result> resultPromise = WS.url(url).get().map(
             new Function<WSResponse, Result>() {
@@ -36,7 +35,6 @@ public class Proxy extends Controller {
 	    );
 	    return resultPromise;
 	}
-	
 	
 	public static Result getWithCache(String url, final Route route, final String cacheKey) {
 		ResponseCache responseCache = (ResponseCache)Cache.get(cacheKey);
@@ -55,19 +53,20 @@ public class Proxy extends Controller {
 		}
     	return status(responseCache.status, responseCache.body);
 	}
-
+	
     public static Result handleGet(String path) throws Exception {
     	
     	final Route route = findRoute(request().host());
 		final String upstreamUrl = "http://" + route.destination + request().uri().replaceAll("%20", "+");
 		
 		if (route.cache == 0)
-			return asyncGetNoCache(upstreamUrl).get(route.timeout);
+			return asyncGet(upstreamUrl).get(route.timeout);
 		else {
 			final String cacheKey = getCacheKey(route);
 			return getWithCache(upstreamUrl, route, cacheKey);
 		}
     }
+
 
     private static String getCacheKey(final Route route) throws Exception {
 		final String cacheKey =  "GET:" + Cache.getOrElse("source:" + route.randomSeed, new java.util.concurrent.Callable<String>() {
@@ -87,6 +86,7 @@ public class Proxy extends Controller {
 			if (route != null &&  route.timeout != null) {
 				route.timeout = 10000;
 			}
+			//route.cache = 10;
 			Cache.set("route:" + source, route, 60); // in cache per 60 secondi
 		}
 		if (route != null) Logger.trace("got route with seed " + route.randomSeed);

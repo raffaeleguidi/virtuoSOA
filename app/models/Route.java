@@ -16,7 +16,7 @@ public class Route extends Model {
 	public Integer cache;
 	public Double randomSeed;
 	
-	public static Finder<Long, Route> find = new Finder<Long,Route>(
+	public static Model.Finder<Long, Route> find = new Finder<Long,Route>(
 		Long.class, Route.class
 	); 
 

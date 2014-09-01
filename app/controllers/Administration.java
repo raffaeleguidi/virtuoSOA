@@ -25,7 +25,13 @@ public class Administration extends Controller {
     }
 
     public static Result saveRoute() {
-    	Route route = Form.form(Route.class).bindFromRequest().get();
+    	Form form = Form.form(Route.class).bindFromRequest();
+		if (form.hasErrors()) {
+			Logger.error("************************" + form.errorsAsJson().toString());
+	        // Do something with the errors (i.e. : redirect with flash message containing the main error)
+	    }
+    	Route route = (Route) form.get();
+    	
 		Cache.remove("source:" + route.randomSeed.toString());
 		Logger.info("deleted randomSeed " + route.randomSeed + " for route " + route.source);
     	route.randomSeed = Math.random();    	
@@ -43,7 +49,7 @@ public class Administration extends Controller {
     }
 
     public static Result routesList() {
-    	List<Route> routes = (List<Route>)new Model.Finder(String.class, Route.class).all();
+    	List<Route> routes = ((List<Route>)new Model.Finder(String.class, Route.class).all());
     	return ok(routesList.render(routes));
     }
 }
