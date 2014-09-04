@@ -1,18 +1,23 @@
+package org.virtuosoa.proxy;
 
+
+import org.virtuosoa.interceptors.MyInterceptor;
 
 import com.predic8.membrane.core.HttpRouter;
 import com.predic8.membrane.core.rules.ServiceProxy;
 import com.predic8.membrane.core.rules.ServiceProxyKey;
 
 public class Main {
+	
+    static final int PORT = Integer.parseInt(System.getProperty("port", "4000"));
+
 	public static void main(String[] args) throws Exception {
-		String hostname = "*";
+//		String hostname = "*";
 		String method = "GET";
 		String path = ".*";
-		int listenPort = 4000;
 
-		ServiceProxyKey key1 = new ServiceProxyKey("monitor.virtuoso", method, path, listenPort);
-		ServiceProxyKey key2 = new ServiceProxyKey("test.virtuoso", method, path, listenPort);
+		ServiceProxyKey key1 = new ServiceProxyKey("monitor.virtuoso", method, path, PORT);
+		ServiceProxyKey key2 = new ServiceProxyKey("test.virtuoso", method, path, PORT);
 
 		String targetHost = "predic8.com";
 		String targetHost2 = "google.com";
