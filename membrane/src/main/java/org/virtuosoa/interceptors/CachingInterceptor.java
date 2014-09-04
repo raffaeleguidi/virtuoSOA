@@ -15,7 +15,7 @@ import com.predic8.membrane.core.http.Response;
 import com.predic8.membrane.core.interceptor.*;
 import com.predic8.membrane.core.ws.relocator.Relocator;
 
-public class MyInterceptor extends AbstractInterceptor {
+public class CachingInterceptor extends AbstractInterceptor {
 	private static final Logger log = Logger.getAnonymousLogger();
 	
 	@Override public void handleAbort(Exchange exchange) {
@@ -36,7 +36,7 @@ public class MyInterceptor extends AbstractInterceptor {
 		Cache.set("sCode:" + key, new Integer(rs.getStatusCode()));
 		Cache.set("sText:" + key, rs.getStatusMessage());
 		Cache.set("body:" + key, rs.getBodyAsStringDecoded());
-		Cache.set("type", rs.getHeader().getContentType());
+		Cache.set("type:" + key, rs.getHeader().getContentType());
 		return Outcome.CONTINUE;
 	};
 	
@@ -64,8 +64,7 @@ public class MyInterceptor extends AbstractInterceptor {
 			fromCache.setStatusCode(code.intValue());
 			fromCache.setStatusMessage((String) Cache.get("sText:" + key));
 			fromCache.setBodyContent(((String) Cache.get("body:" + key)).getBytes());
-//			fromCache.getHeader().setContentType((String) Cache.get("type:" + key));
-			fromCache.getHeader().add(Header.CONTENT_TYPE, (String) Cache.get("type:" + key));
+			fromCache.getHeader().setContentType(Cache.getAsString("type:" + key));
 			exchange.setResponse(fromCache);
 			return Outcome.RETURN;
 		} else {

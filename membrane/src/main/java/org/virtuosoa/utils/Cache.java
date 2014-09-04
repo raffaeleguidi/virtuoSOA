@@ -14,6 +14,7 @@ import com.hazelcast.core.HazelcastInstance;
 public class Cache {
     private static Map<String, Object> map = new HashMap<String, Object>();
     private static Map<String, Serializable> globalCache = null;
+    public static long defaultExpiresIn = 300;
 	
 	public static Serializable getGlobal(String key) {
 		return globalCache.get(key);
@@ -24,8 +25,11 @@ public class Cache {
 	public static Object get(String key) {
 		return map.get(key);
 	}	
-    public static void set(String key, Object value) {
+    public static void set(String key, Object value, long expiresIn ) {
     	map.put(key, value);
+    }
+    public static void set(String key, Object value) {
+    	set(key, value, defaultExpiresIn);
     }
     public static String getAsString(String key) {
     	return (String) map.get(key);

@@ -3,7 +3,7 @@ package org.virtuosoa.proxy;
 
 import java.io.IOException;
 
-import org.virtuosoa.interceptors.MyInterceptor;
+import org.virtuosoa.interceptors.CachingInterceptor;
 import org.virtuosoa.utils.Cache;
 import org.virtuosoa.utils.Route;
 
@@ -17,14 +17,13 @@ public class Main {
 	static HttpRouter router = new HttpRouter();
     
     public static ServiceProxy addRoute(String source) throws IOException {
-    	Route route = Route.findBySource(source);
+    	Route route = Route.find(source);
     	return addRoute(route);
      }
     
     public static ServiceProxy addRoute(Route route) throws IOException {
-       	ServiceProxyKey key = new ServiceProxyKey(route.source, "*", ".*", PORT); // <- should be one for GET (with a cache interceptor) and one for other methods 
+       	ServiceProxyKey key = new ServiceProxyKey(route.source, route.method, ".*", PORT); // <- should be one for GET (with a cache interceptor) and one for other methods 
     	ServiceProxy sp = new ServiceProxy(key, route.destination, route.destinationPort);
-    	sp.getInterceptors().add(new MyInterceptor());
 		router.add(sp);
 		return sp;
     }
@@ -33,10 +32,13 @@ public class Main {
 
 		Cache.init();
 		 
-		addRoute(new Route("monitor.virtuoso", "10.232.132.100", 3000, 1000, 300).save());
-		addRoute(new Route("test.virtuoso", "10.232.132.100", 3000, 1000, 0).save());
-		addRoute(new Route("telefoni.virtuoso", "telefoni", 80, 1000, 0).save());
-		addRoute(new Route("google.virtuoso", "google.com", 80, 1000, 0).save());
+		addRoute(
+				new Route("monitor.virtuoso", "8rmw00004738", "GET", 3000, 1000, 300).save())
+					.getInterceptors().add(new CachingInterceptor());
+		addRoute(new Route("monitor.virtuoso", "8rmw00004738", "*", 3000, 1000, 300).save());
+		addRoute(new Route("test.virtuoso", "10.232.132.100", "*", 3000, 1000, 0).save());
+		addRoute(new Route("telefoni.virtuoso", "telefoni", "*", 80, 1000, 0).save());
+		addRoute(new Route("google.virtuoso", "google.com", "*", 80, 1000, 0).save());
 
 		router.getTransport().setPrintStackTrace(true);
 		router.init();

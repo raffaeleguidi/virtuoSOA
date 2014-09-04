@@ -1,4 +1,4 @@
-package com.mycompany.app;
+package org.virtuosoa;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

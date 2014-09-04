@@ -39,7 +39,7 @@
         <artifactId>capsule-maven-plugin</artifactId>
         <version>0.1</version>
         <configuration>
-          <mainClass>org.virtuosoa.Main</mainClass>
+          <mainClass>org.virtuosoa.proxy.Main</mainClass>
         </configuration>
       </plugin>
     </plugins>
