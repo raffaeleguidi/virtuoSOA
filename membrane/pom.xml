@@ -31,4 +31,18 @@
         <url>http://repository.membrane-soa.org/content/groups/public</url>
     </repository>
 </repositories>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.github.pguedes</groupId>
+        <artifactId>capsule-maven-plugin</artifactId>
+        <version>0.1</version>
+        <configuration>
+          <mainClass>org.virtuosoa.Main</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>

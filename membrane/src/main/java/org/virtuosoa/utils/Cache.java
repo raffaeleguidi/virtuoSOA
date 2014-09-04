@@ -3,6 +3,7 @@ package org.virtuosoa.utils;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.config.JoinConfig;
@@ -44,6 +45,14 @@ public class Cache {
    	
     static BackgroundCacheCleanup ste = null;
     
+    public static void stats() {
+    	System.out.println(" ***** map size: " + map.size());
+    	
+    	for (Entry entry: map.entrySet()) {
+    		System.out.println(entry.getKey() + "=" + entry.getValue());
+    	}
+    }
+    
 	public static void init() {
 	
         Config cfg = new Config();
@@ -57,14 +66,11 @@ public class Cache {
         join.getTcpIpConfig().addMember(HC_MASTER);
 
         HazelcastInstance instance = Hazelcast.newHazelcastInstance(cfg);
-        globalCache = instance.getMap("nexxy-routes");
+        globalCache = instance.getMap("virtuoSOA-routes");
  
         System.out.println(" ***** Cache contains: "+ map.size() + " items");
 
     	ste = new BackgroundCacheCleanup();
 	    ste.startScheduleTask();
- 
-		new Route("monitor.virtuoso", "10.232.132.100:3000", 1000, 300).save();
-		new Route("test.virtuoso", "10.232.132.100:3000", 1000, 0).save();
 	}
 }
