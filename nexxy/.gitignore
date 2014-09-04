@@ -1,0 +1,8 @@
+
+#
+# native udt library extract location
+#
+
+/lib
+
+/target
