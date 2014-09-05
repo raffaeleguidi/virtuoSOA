@@ -13,13 +13,16 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
 public class Cache {
-    private static Map<String, Expiring> map = new ConcurrentHashMap<String, Expiring>();
-    private static Map<String, Serializable> globalCache = null;
+    static final long DEFAULT_EXPIRATION = Long.parseLong(System.getProperty("defaultExpiration", "300")); // 5 minutes
+    static final int HC_PORT = Integer.parseInt(System.getProperty("hcPort", "5701"));
+    static final String HC_MASTER = System.getProperty("hcMaster", "127.0.0.1:5701");
+
     public static long SECONDS = 1000;
     public static long MINUTES = SECONDS * 60;
     
-    public static long defaultExpiresIn = 10 * SECONDS; // 10 seconds
-	
+	private static Map<String, Expiring> map = new ConcurrentHashMap<String, Expiring>();
+    private static Map<String, Serializable> globalCache = null;
+    	
 	public static Serializable getGlobal(String key) {
 		return globalCache.get(key);
 	}	
@@ -38,7 +41,7 @@ public class Cache {
     	map.put(key, Expiring.in(value, expiresIn));
     }
     public static void set(String key, Object value) {
-    	set(key, value, defaultExpiresIn);
+    	set(key, value, DEFAULT_EXPIRATION);
     }
     public static String getAsString(String key) {
     	return (String) get(key);
@@ -53,9 +56,6 @@ public class Cache {
 		return map.size();
 	}
 	
-    static final int HC_PORT = Integer.parseInt(System.getProperty("hcPort", "5701"));
-    static final String HC_MASTER = System.getProperty("hcMaster", "127.0.0.1:5701");
-   	
     static BackgroundCacheCleanup ste = null;
     
     public static void stats() {

@@ -25,7 +25,7 @@ public class BackgroundCacheCleanup {
                     ex.printStackTrace(); //or loggger would be better
                 }
             }
-        }, 0, 15, TimeUnit.SECONDS);
+        }, 0, 30, TimeUnit.SECONDS);
     }
 
     private void cleanupCache() {
