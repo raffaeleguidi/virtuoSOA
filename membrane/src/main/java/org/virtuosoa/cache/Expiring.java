@@ -14,6 +14,6 @@ public class Expiring {
 		return new Expiring(payload, expiresAt);
 	}
 	public boolean expired() {
-		return expiresAt >= System.currentTimeMillis();
+		return expiresAt < System.currentTimeMillis();
 	}
 }
