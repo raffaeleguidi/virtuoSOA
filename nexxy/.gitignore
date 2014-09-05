@@ -4,7 +4,8 @@
 #
 
 /lib
-/.settings
-/.classpath
-/.project
+/bin
+.settings/
+.classpath
+.project
 /target
