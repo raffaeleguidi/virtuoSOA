@@ -4,8 +4,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.virtuosoa.utils.BackgroundCacheCleanup;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.config.JoinConfig;
@@ -14,7 +13,7 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
 public class Cache {
-    private static Map<String, Expiring> map = new HashMap<String, Expiring>();
+    private static Map<String, Expiring> map = new ConcurrentHashMap<String, Expiring>();
     private static Map<String, Serializable> globalCache = null;
     public static long SECONDS = 1000;
     public static long MINUTES = SECONDS * 60;
@@ -29,7 +28,7 @@ public class Cache {
     }
 	public static Object get(String key) {
 		Expiring expiring = map.get(key);
-		if (expiring != null && expiring.expiresAt >= System.currentTimeMillis()) {
+		if (expiring != null && !expiring.expired()) {
 			return expiring.payload;
 		} else {
 			return null;
@@ -61,10 +60,6 @@ public class Cache {
     
     public static void stats() {
     	System.out.println(" ***** map size: " + map.size());
-    	
-    	for (Entry entry: map.entrySet()) {
-    		System.out.println(entry.getKey() + "=" + entry.getValue());
-    	}
     }
     
 	public static void init() {
@@ -86,5 +81,14 @@ public class Cache {
 
     	ste = new BackgroundCacheCleanup();
 	    ste.startScheduleTask();
+	}
+	public static void cleanUp() {
+    	for (Entry<String, Expiring> entry: map.entrySet()) {
+    		if (entry.getValue().expired()){
+//        		System.out.println("removing " + entry.getKey());
+    			map.remove(entry.getKey());
+//        		System.out.println("removed " + entry.getKey());
+    		}
+    	}
 	}
 }

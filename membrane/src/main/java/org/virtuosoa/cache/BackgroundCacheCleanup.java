@@ -1,4 +1,4 @@
-package org.virtuosoa.utils;
+package org.virtuosoa.cache;
 
 
 import java.util.concurrent.Executors;
@@ -25,10 +25,13 @@ public class BackgroundCacheCleanup {
                     ex.printStackTrace(); //or loggger would be better
                 }
             }
-        }, 0, 15, TimeUnit.MINUTES);
+        }, 0, 15, TimeUnit.SECONDS);
     }
 
     private void cleanupCache() {
-        System.out.println("doing stuff...");
+        System.out.println("starting cache cleanup");
+    	Cache.cleanUp();
+    	Cache.stats();
+        System.out.println("ended cache cleanup");
     }
 }

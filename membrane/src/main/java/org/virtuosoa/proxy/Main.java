@@ -33,7 +33,7 @@ public class Main {
 		Cache.init();
 		 
 		addRoute(
-				new Route("monitor.virtuoso", "8rmw00004738", "GET", 3000, 1000, 5 * Cache.MINUTES).save())
+				new Route("monitor.virtuoso", "8rmw00004738", "GET", 3000, 1000, 5 * Cache.SECONDS).save())
 					.getInterceptors().add(new CachingInterceptor());
 		addRoute(new Route("monitor.virtuoso", "8rmw00004738", "*", 3000, 1000, 0).save());
 		addRoute(new Route("test.virtuoso", "8rmw00004738", "*", 3000, 1000, 0).save());
