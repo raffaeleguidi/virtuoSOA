@@ -1,6 +1,6 @@
 package org.virtuosoa.interceptors;
 
-import org.virtuosoa.utils.Route;
+import org.virtuosoa.models.Route;
 
 import java.net.MalformedURLException;
 import java.net.URL;

@@ -5,9 +5,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 public class BackgroundCacheCleanup {
-    private final ScheduledExecutorService scheduler = Executors
+	private static final Logger log = Logger.getAnonymousLogger();
+
+	private final ScheduledExecutorService scheduler = Executors
         .newScheduledThreadPool(1);
 
     public void startScheduleTask() {
@@ -29,9 +32,9 @@ public class BackgroundCacheCleanup {
     }
 
     private void cleanupCache() {
-        System.out.println("starting cache cleanup");
+        log.info("starting cache cleanup");
     	Cache.cleanUp();
     	Cache.stats();
-        System.out.println("ended cache cleanup");
+        log.info("ended cache cleanup");
     }
 }

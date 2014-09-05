@@ -2,10 +2,11 @@ package org.virtuosoa.proxy;
 
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import org.virtuosoa.cache.Cache;
 import org.virtuosoa.interceptors.CachingInterceptor;
-import org.virtuosoa.utils.Route;
+import org.virtuosoa.models.Route;
 
 import com.predic8.membrane.core.HttpRouter;
 import com.predic8.membrane.core.rules.ServiceProxy;
@@ -13,7 +14,9 @@ import com.predic8.membrane.core.rules.ServiceProxyKey;
 
 public class Main {
 	
-    static final int PORT = Integer.parseInt(System.getProperty("port", "4000"));
+	private static final Logger log = Logger.getAnonymousLogger();
+
+	static final int PORT = Integer.parseInt(System.getProperty("port", "4000"));
 	static HttpRouter router = new HttpRouter();
     
     public static ServiceProxy addRoute(String source) throws IOException {
@@ -25,6 +28,7 @@ public class Main {
        	ServiceProxyKey key = new ServiceProxyKey(route.source, route.method, ".*", PORT); // <- should be one for GET (with a cache interceptor) and one for other methods 
     	ServiceProxy sp = new ServiceProxy(key, route.destination, route.destinationPort);
 		router.add(sp);
+		log.info("added route on " + route.source);
 		return sp;
     }
 
@@ -43,5 +47,6 @@ public class Main {
 
 		router.getTransport().setPrintStackTrace(true);
 		router.init();
+		log.info("reverseproxy started");
 	}
 }

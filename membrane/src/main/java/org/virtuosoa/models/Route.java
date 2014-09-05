@@ -1,4 +1,4 @@
-package org.virtuosoa.utils;
+package org.virtuosoa.models;
 
 import java.io.Serializable;
 

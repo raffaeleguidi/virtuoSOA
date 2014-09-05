@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.config.JoinConfig;
@@ -13,7 +14,9 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
 public class Cache {
-    static final long DEFAULT_EXPIRATION = Long.parseLong(System.getProperty("defaultExpiration", "300")); // 5 minutes
+	private static final Logger log = Logger.getAnonymousLogger();
+
+	static final long DEFAULT_EXPIRATION = Long.parseLong(System.getProperty("defaultExpiration", "300")); // 5 minutes
     static final int HC_PORT = Integer.parseInt(System.getProperty("hcPort", "5701"));
     static final String HC_MASTER = System.getProperty("hcMaster", "127.0.0.1:5701");
 
@@ -59,7 +62,7 @@ public class Cache {
     static BackgroundCacheCleanup ste = null;
     
     public static void stats() {
-    	System.out.println(" ***** map size: " + map.size());
+    	log.info(" ***** map size: " + map.size());
     }
     
 	public static void init() {
@@ -77,7 +80,7 @@ public class Cache {
         HazelcastInstance instance = Hazelcast.newHazelcastInstance(cfg);
         globalCache = instance.getMap("virtuoSOA-routes");
  
-        System.out.println(" ***** Cache contains: "+ map.size() + " items");
+        log.info(" ***** Cache contains: "+ map.size() + " items");
 
     	ste = new BackgroundCacheCleanup();
 	    ste.startScheduleTask();
@@ -85,9 +88,9 @@ public class Cache {
 	public static void cleanUp() {
     	for (Entry<String, Expiring> entry: map.entrySet()) {
     		if (entry.getValue().expired()){
-//        		System.out.println("removing " + entry.getKey());
+//        		log.info("removing " + entry.getKey());
     			map.remove(entry.getKey());
-//        		System.out.println("removed " + entry.getKey());
+//        		log.info("removed " + entry.getKey());
     		}
     	}
 	}
