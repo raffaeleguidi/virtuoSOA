@@ -3,8 +3,8 @@ package org.virtuosoa.proxy;
 
 import java.io.IOException;
 
+import org.virtuosoa.cache.Cache;
 import org.virtuosoa.interceptors.CachingInterceptor;
-import org.virtuosoa.utils.Cache;
 import org.virtuosoa.utils.Route;
 
 import com.predic8.membrane.core.HttpRouter;
@@ -33,10 +33,10 @@ public class Main {
 		Cache.init();
 		 
 		addRoute(
-				new Route("monitor.virtuoso", "8rmw00004738", "GET", 3000, 1000, 300).save())
+				new Route("monitor.virtuoso", "8rmw00004738", "GET", 3000, 1000, 5 * Cache.MINUTES).save())
 					.getInterceptors().add(new CachingInterceptor());
-		addRoute(new Route("monitor.virtuoso", "8rmw00004738", "*", 3000, 1000, 300).save());
-		addRoute(new Route("test.virtuoso", "10.232.132.100", "*", 3000, 1000, 0).save());
+		addRoute(new Route("monitor.virtuoso", "8rmw00004738", "*", 3000, 1000, 0).save());
+		addRoute(new Route("test.virtuoso", "8rmw00004738", "*", 3000, 1000, 0).save());
 		addRoute(new Route("telefoni.virtuoso", "telefoni", "*", 80, 1000, 0).save());
 		addRoute(new Route("google.virtuoso", "google.com", "*", 80, 1000, 0).save());
 

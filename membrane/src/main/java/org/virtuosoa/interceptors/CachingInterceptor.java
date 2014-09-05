@@ -1,12 +1,12 @@
 package org.virtuosoa.interceptors;
 
-
+import org.virtuosoa.utils.Route;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Logger;
 
-import org.virtuosoa.utils.Cache;
+import org.virtuosoa.cache.Cache;
 
 import com.predic8.membrane.core.exchange.*;
 import com.predic8.membrane.core.http.Header;
@@ -32,43 +32,56 @@ public class CachingInterceptor extends AbstractInterceptor {
 		Response rs = exchange.getResponse();
 		Request rq = exchange.getRequest();
 		String key = rq.getHeader().getFirstValue("Cache-Key");
-		log.info("Cache-Key " + key );
-		Cache.set("sCode:" + key, new Integer(rs.getStatusCode()));
-		Cache.set("sText:" + key, rs.getStatusMessage());
-		Cache.set("body:" + key, rs.getBodyAsStringDecoded());
-		Cache.set("type:" + key, rs.getHeader().getContentType());
+		String routeKey = rq.getHeader().getFirstValue("Route-Key");
+		Route route = Route.find(routeKey);
+		if (route.cache > 0) {
+			log.info("saving in cache");
+			log.info("Cache-Key " + key );
+			log.info("Route-Key " + routeKey );
+			Cache.set("sCode:" + key, new Integer(rs.getStatusCode()), route.cache);
+			Cache.set("sText:" + key, rs.getStatusMessage(), route.cache);
+			Cache.set("body:" + key, rs.getBodyAsStringDecoded(), route.cache);
+			Cache.set("type:" + key, rs.getHeader().getContentType(), route.cache);
+		}
 		return Outcome.CONTINUE;
 	};
 	
-	private static long startedAt;
+	private long startedAt;
+	
+	private String stripPort(String host) {
+		return host.substring(0, host.indexOf(":"));
+	}
 
 	@Override
 	public Outcome handleRequest(Exchange exchange) throws MalformedURLException {
 		startedAt = System.currentTimeMillis();
 		
-		Response rs = exchange.getResponse();
 		Request rq = exchange.getRequest();
 		
-//		Cache.stats();
-
+		String routeKey = stripPort(rq.getHeader().getHost()) + "$" + rq.getMethod();
+		exchange.getRequest().getHeader().add("Route-Key", routeKey);
+		
 		String key =  rq.getMethod() + "$" + rq.getHeader().getHost() + "$" + rq.getUri();
 		exchange.getRequest().getHeader().add("Cache-Key", key);
 
-		Integer code = (Integer) Cache.get("sCode:" + key);
-		log.info("code for " + key + " is " + code);
-		if (code != null) {
-			Response fromCache = new Response();
-			fromCache.getHeader().add("X-Served-In", "" + (System.currentTimeMillis() - startedAt));
-			fromCache.getHeader().add("X-Served-From", "local cache");
-			log.info("key " + key + " served from cache");
-			fromCache.setStatusCode(code.intValue());
-			fromCache.setStatusMessage((String) Cache.get("sText:" + key));
-			fromCache.setBodyContent(((String) Cache.get("body:" + key)).getBytes());
-			fromCache.getHeader().setContentType(Cache.getAsString("type:" + key));
-			exchange.setResponse(fromCache);
-			return Outcome.RETURN;
-		} else {
-			log.info("key " + key + " not found in cache");
+		Route route = Route.find(routeKey);
+		if (route.cache > 0) {
+			Integer code = (Integer) Cache.get("sCode:" + key);
+			log.info("code for " + key + " is " + code);
+			if (code != null) {
+				Response fromCache = new Response();
+				fromCache.getHeader().add("X-Served-In", "" + (System.currentTimeMillis() - startedAt));
+				fromCache.getHeader().add("X-Served-From", "local cache");
+				log.info("key " + key + " served from cache");
+				fromCache.setStatusCode(code.intValue());
+				fromCache.setStatusMessage((String) Cache.get("sText:" + key));
+				fromCache.setBodyContent(((String) Cache.get("body:" + key)).getBytes());
+				fromCache.getHeader().setContentType(Cache.getAsString("type:" + key));
+				exchange.setResponse(fromCache);
+				return Outcome.RETURN;
+			} else {
+				log.info("key " + key + " not found in cache");
+			}
 		}
 
 		return Outcome.CONTINUE;

@@ -2,6 +2,8 @@ package org.virtuosoa.utils;
 
 import java.io.Serializable;
 
+import org.virtuosoa.cache.Cache;
+
 public class Route implements Serializable {
 	/**
 	 * 
@@ -13,9 +15,9 @@ public class Route implements Serializable {
 	public String method;
 	public int destinationPort;
 	public int timeout;
-	public int cache;
+	public long cache;
 
-	public Route(String source, String destination, String method, int destinationPort, int timeout, int cache) {
+	public Route(String source, String destination, String method, int destinationPort, int timeout, long cache) {
 		this.source = source;
 		this.destination = destination;
 		this.method = method;

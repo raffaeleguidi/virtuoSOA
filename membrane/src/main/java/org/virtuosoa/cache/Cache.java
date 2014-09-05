@@ -1,9 +1,11 @@
-package org.virtuosoa.utils;
+package org.virtuosoa.cache;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.virtuosoa.utils.BackgroundCacheCleanup;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.config.JoinConfig;
@@ -12,9 +14,12 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
 public class Cache {
-    private static Map<String, Object> map = new HashMap<String, Object>();
+    private static Map<String, Expiring> map = new HashMap<String, Expiring>();
     private static Map<String, Serializable> globalCache = null;
-    public static long defaultExpiresIn = 300;
+    public static long SECONDS = 1000;
+    public static long MINUTES = SECONDS * 60;
+    
+    public static long defaultExpiresIn = 10 * SECONDS; // 10 seconds
 	
 	public static Serializable getGlobal(String key) {
 		return globalCache.get(key);
@@ -23,22 +28,27 @@ public class Cache {
     	globalCache.put(key, value);
     }
 	public static Object get(String key) {
-		return map.get(key);
+		Expiring expiring = map.get(key);
+		if (expiring != null && expiring.expiresAt >= System.currentTimeMillis()) {
+			return expiring.payload;
+		} else {
+			return null;
+		}
 	}	
     public static void set(String key, Object value, long expiresIn ) {
-    	map.put(key, value);
+    	map.put(key, Expiring.in(value, expiresIn));
     }
     public static void set(String key, Object value) {
     	set(key, value, defaultExpiresIn);
     }
     public static String getAsString(String key) {
-    	return (String) map.get(key);
+    	return (String) get(key);
     }
     public static byte[] getAsByteArray(String key) {
-    	return (byte[]) map.get(key);
+    	return (byte[]) get(key);
     }
     public static Integer getAsInt(String key) {
-    	return (Integer) map.get(key);
+    	return (Integer) get(key);
     }
 	public static int size() {
 		return map.size();
