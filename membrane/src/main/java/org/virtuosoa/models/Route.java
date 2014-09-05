@@ -30,6 +30,8 @@ public class Route implements Serializable {
 		return this;
 	}
 	public static Route find(String sourceAndMethod) {
+		// see http://hazelcast.org/docs/latest/manual/html/query.html
+		// to query the map with sql or criteria query
 		return (Route) Cache.getGlobal("route:" + sourceAndMethod);
 	}
 }

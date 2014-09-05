@@ -1,0 +1,26 @@
+[
+ 	{
+		"source":"monitor.virtuoso",
+		"destination":"10.232.132.100",
+		"method":"GET",
+		"destinationPort":3000,
+		"timeout":1000,
+		"cache":300000
+ 	},
+ 	{
+		"source":"monitor.virtuoso",
+		"destination":"10.232.132.100",
+		"method":"*",
+		"destinationPort":3000,
+		"timeout":1000,
+		"cache":0
+ 	},
+ 	{
+		"source":"test.virtuoso",
+		"destination":"10.232.132.100",
+		"method":"*",
+		"destinationPort":3000,
+		"timeout":1000,
+		"cache":0
+ 	}
+]
