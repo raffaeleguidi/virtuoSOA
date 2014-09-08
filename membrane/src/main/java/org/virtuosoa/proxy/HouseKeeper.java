@@ -33,7 +33,7 @@ public class HouseKeeper {
                     ex.printStackTrace(); //or loggger would be better
                 }
             }
-        }, 0, 30, TimeUnit.SECONDS);
+        }, 0, 10, TimeUnit.MINUTES);
     }
 
     private void cleanupCache() throws Exception {

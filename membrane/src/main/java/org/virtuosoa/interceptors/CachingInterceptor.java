@@ -2,7 +2,7 @@ package org.virtuosoa.interceptors;
 
 import java.net.MalformedURLException;
 
-import org.springframework.cache.interceptor.CacheInterceptor;
+import org.apache.log4j.Logger;
 import org.virtuosoa.cache.Cache;
 import org.virtuosoa.models.Route;
 
@@ -12,10 +12,8 @@ import com.predic8.membrane.core.http.Response;
 import com.predic8.membrane.core.interceptor.AbstractInterceptor;
 import com.predic8.membrane.core.interceptor.Outcome;
 
-import org.apache.log4j.Logger;
-
 public class CachingInterceptor extends AbstractInterceptor {
-	private static final Logger log = Logger.getLogger(CacheInterceptor.class.getCanonicalName());
+	private static final Logger log = Logger.getLogger(CachingInterceptor.class.getCanonicalName());
 	
 	@Override public void handleAbort(Exchange exchange) {
 		log.info("handleAbort at  " + (System.currentTimeMillis()));
@@ -33,6 +31,7 @@ public class CachingInterceptor extends AbstractInterceptor {
 		String key = rq.getHeader().getFirstValue("Cache-Key");
 		String routeKey = rq.getHeader().getFirstValue("Route-Key");
 		Route route = Route.find(routeKey);
+		log.info("looking in cache");
 		if (route.cache > 0) {
 			log.info("saving in cache");
 			log.info("Cache-Key " + key );
@@ -42,6 +41,7 @@ public class CachingInterceptor extends AbstractInterceptor {
 			Cache.set("body:" + key, rs.getBodyAsStringDecoded(), route.cache);
 			Cache.set("type:" + key, rs.getHeader().getContentType(), route.cache);
 		}
+		log.info("request served in " + (System.currentTimeMillis() - startedAt) + " msecs");
 		return Outcome.CONTINUE;
 	};
 	
@@ -63,10 +63,14 @@ public class CachingInterceptor extends AbstractInterceptor {
 		String key =  rq.getMethod() + "$" + rq.getHeader().getHost() + "$" + rq.getUri();
 		exchange.getRequest().getHeader().add("Cache-Key", key);
 
+		// this can work only on explicit verbs
+		// have to try it in two steps - first explicit and 2nd with *
+		// better move it in a AbstractRoutingInterceptor for reuse
 		Route route = Route.find(routeKey);
+		log.info("looking for routeKey " + routeKey + " I found " + route);
 		if (route.cache > 0) {
 			Integer code = (Integer) Cache.get("sCode:" + key);
-			log.info("code for " + key + " is " + code);
+			log.debug("code for " + key + " is " + code);
 			if (code != null) {
 				Response fromCache = new Response();
 				fromCache.getHeader().add("X-Served-In", "" + (System.currentTimeMillis() - startedAt));

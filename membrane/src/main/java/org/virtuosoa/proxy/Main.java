@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import org.virtuosoa.cache.Cache;
 import org.virtuosoa.cluster.Cluster;
 import org.virtuosoa.interceptors.CachingInterceptor;
+import org.virtuosoa.interceptors.LoggingInterceptor;
 import org.virtuosoa.models.Route;
 
 import com.google.gson.Gson;
@@ -36,6 +37,7 @@ public class Main {
     public static ServiceProxy addRoute(Route route) throws IOException {
        	ServiceProxyKey key = new ServiceProxyKey(route.source, route.method, ".*", PORT); // <- should be one for GET (with a cache interceptor) and one for other methods 
     	ServiceProxy sp = new ServiceProxy(key, route.destination, route.destinationPort);
+    	sp.getInterceptors().add(new LoggingInterceptor());
     	if (route.cache > 0) {
     		sp.getInterceptors().add(new CachingInterceptor());
     	}

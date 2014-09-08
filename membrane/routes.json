@@ -8,19 +8,19 @@
 		"cache":300000
  	},
  	{
-		"source":"monitor.virtuoso",
+		"source":"test.virtuoso",
 		"destination":"10.232.132.100",
-		"method":"*",
+		"method":"GET",
 		"destinationPort":3000,
 		"timeout":1000,
 		"cache":0
  	},
  	{
-		"source":"test.virtuoso",
+		"source":"localhost",
 		"destination":"10.232.132.100",
-		"method":"*",
+		"method":"GET",
 		"destinationPort":3000,
 		"timeout":1000,
-		"cache":0
+		"cache": 0
  	}
 ]
