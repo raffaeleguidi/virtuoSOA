@@ -82,15 +82,20 @@ public class Main {
     	bw.write(gson.toJson(routes));
     	bw.close();
     }
-
-	public static void main(String[] args) throws Exception {
-		
+    
+    static HouseKeeper ste = null;
+    
+	public static void init() throws Exception {
 		Cache.init();
 		Cluster.init();
-		 
+    	ste = new HouseKeeper();
+	    ste.startScheduleTask();
 		loadRoutesFromJson();
 		addAllRoutes();
+	}
 
+	public static void main(String[] args) throws Exception {
+		init();
 		log.info("membrane-proxy started");
 	}
 }

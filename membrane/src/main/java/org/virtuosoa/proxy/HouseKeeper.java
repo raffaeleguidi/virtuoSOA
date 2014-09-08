@@ -11,7 +11,7 @@ import org.virtuosoa.cache.Cache;
 import org.virtuosoa.cluster.Cluster;
 
 public class HouseKeeper {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = Logger.getLogger(HouseKeeper.class.getSimpleName());
 
 	private final ScheduledExecutorService scheduler = Executors
         .newScheduledThreadPool(1);

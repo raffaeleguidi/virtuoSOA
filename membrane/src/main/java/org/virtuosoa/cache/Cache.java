@@ -6,8 +6,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
-import org.virtuosoa.proxy.HouseKeeper;
-
 public class Cache {
 	private static final Logger log = Logger.getLogger(Cache.class.getSimpleName());
 
@@ -16,7 +14,7 @@ public class Cache {
     public static long SECONDS = 1000;
     public static long MINUTES = SECONDS * 60;
     
-    private static Map<String, Expiring> map = new ConcurrentHashMap<String, Expiring>();
+    private static Map<String, Expiring> map = null; //new ConcurrentHashMap<String, Expiring>();
 
     public static Object get(String key) {
 		Expiring expiring = map.get(key);
@@ -45,17 +43,14 @@ public class Cache {
 		return map.size();
 	}
 	
-    static HouseKeeper ste = null;
-    
     public static void stats() {
     	log.info(" ***** map size: " + map.size());
     }
     
-	public static void init() throws ExecutionException, InterruptedException {
-    	ste = new HouseKeeper();
-	    ste.startScheduleTask();
-	}
-	
+    public static void init() {
+    	map = new ConcurrentHashMap<String, Expiring>();
+    }
+    
 	public static void cleanUp() throws ExecutionException, InterruptedException {
     	for (Entry<String, Expiring> entry: map.entrySet()) {
     		if (entry.getValue().expired()){
