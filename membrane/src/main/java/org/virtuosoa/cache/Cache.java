@@ -4,10 +4,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
+ 
 
 public class Cache {
-	private static final Logger log = Logger.getLogger(Cache.class.getSimpleName());
+	private static final Logger log = Logger.getLogger(Cache.class.getCanonicalName());
 
 	static final long DEFAULT_EXPIRATION = Long.parseLong(System.getProperty("defaultExpiration", "300")); // 5 minutes
 
@@ -54,9 +56,9 @@ public class Cache {
 	public static void cleanUp() throws ExecutionException, InterruptedException {
     	for (Entry<String, Expiring> entry: map.entrySet()) {
     		if (entry.getValue().expired()){
-        		log.finest("removing " + entry.getKey());
+        		log.debug("removing " + entry.getKey());
     			map.remove(entry.getKey());
-        		log.finest("removed " + entry.getKey());
+        		log.debug("removed " + entry.getKey());
     		}
     	}
 	}

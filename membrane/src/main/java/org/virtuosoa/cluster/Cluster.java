@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
 
 import org.virtuosoa.models.Route;
 import org.virtuosoa.proxy.Main;
@@ -18,8 +17,10 @@ import com.hazelcast.core.ITopic;
 import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
 
+import org.apache.log4j.Logger;
+ 
 public class Cluster {
-	private static final Logger log = Logger.getLogger(Cluster.class.getSimpleName());
+	private static final Logger log = Logger.getLogger(Cluster.class.getCanonicalName());
 
     private static HazelcastInstance instance = null;
 	
@@ -34,6 +35,7 @@ public class Cluster {
 	public static void init() throws ExecutionException, InterruptedException {
 	
         Config cfg = new Config();
+        cfg.setProperty("hazelcast.logging.type", "log4j");
         
         NetworkConfig network = cfg.getNetworkConfig();
         network.setPort(HC_PORT);

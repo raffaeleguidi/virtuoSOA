@@ -5,13 +5,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 import org.virtuosoa.cache.Cache;
 import org.virtuosoa.cluster.Cluster;
 
+import org.apache.log4j.Logger;
+ 
 public class HouseKeeper {
-	private static final Logger log = Logger.getLogger(HouseKeeper.class.getSimpleName());
+	private static final Logger log = Logger.getLogger(HouseKeeper.class.getCanonicalName());
 
 	private final ScheduledExecutorService scheduler = Executors
         .newScheduledThreadPool(1);

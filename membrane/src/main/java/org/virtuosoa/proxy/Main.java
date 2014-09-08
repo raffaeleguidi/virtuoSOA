@@ -7,7 +7,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
 
 import org.virtuosoa.cache.Cache;
 import org.virtuosoa.cluster.Cluster;
@@ -20,9 +19,11 @@ import com.predic8.membrane.core.HttpRouter;
 import com.predic8.membrane.core.rules.ServiceProxy;
 import com.predic8.membrane.core.rules.ServiceProxyKey;
 
+import org.apache.log4j.Logger;
+ 
 public class Main {
 	
-	private static final Logger log = Logger.getLogger(Main.class.getSimpleName());
+	static final Logger log = Logger.getLogger(Main.class.getCanonicalName());
 
 	static final int PORT = Integer.parseInt(System.getProperty("port", "4000"));
 	static HttpRouter router = null; // = new HttpRouter();

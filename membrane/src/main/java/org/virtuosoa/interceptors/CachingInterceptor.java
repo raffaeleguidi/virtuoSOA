@@ -1,8 +1,8 @@
 package org.virtuosoa.interceptors;
 
 import java.net.MalformedURLException;
-import java.util.logging.Logger;
 
+import org.springframework.cache.interceptor.CacheInterceptor;
 import org.virtuosoa.cache.Cache;
 import org.virtuosoa.models.Route;
 
@@ -12,8 +12,10 @@ import com.predic8.membrane.core.http.Response;
 import com.predic8.membrane.core.interceptor.AbstractInterceptor;
 import com.predic8.membrane.core.interceptor.Outcome;
 
+import org.apache.log4j.Logger;
+
 public class CachingInterceptor extends AbstractInterceptor {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = Logger.getLogger(CacheInterceptor.class.getCanonicalName());
 	
 	@Override public void handleAbort(Exchange exchange) {
 		log.info("handleAbort at  " + (System.currentTimeMillis()));
