@@ -1,6 +1,7 @@
 package org.virtuosoa.cache;
 
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -31,7 +32,7 @@ public class BackgroundCacheCleanup {
         }, 0, 30, TimeUnit.SECONDS);
     }
 
-    private void cleanupCache() {
+    private void cleanupCache() throws ExecutionException, InterruptedException {
         log.info("starting cache cleanup");
     	Cache.cleanUp();
     	Cache.stats();

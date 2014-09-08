@@ -26,12 +26,12 @@ public class Route implements Serializable {
 		this.cache = cache;
 	}
 	public Route save() {
-		Cache.setGlobal("route:" + source + "$" + method, this);
+		Cache.setRoute("route:" + source + "$" + method, this);
 		return this;
 	}
 	public static Route find(String sourceAndMethod) {
 		// see http://hazelcast.org/docs/latest/manual/html/query.html
 		// to query the map with sql or criteria query
-		return (Route) Cache.getGlobal("route:" + sourceAndMethod);
+		return (Route) Cache.getRoute("route:" + sourceAndMethod);
 	}
 }

@@ -1,17 +1,30 @@
 package org.virtuosoa.cache;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
+import org.virtuosoa.models.Route;
+import org.virtuosoa.proxy.Main;
+
+import com.google.common.collect.MapMaker;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.JoinConfig;
 import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.HazelcastInstanceAware;
+import com.hazelcast.core.ITopic;
+import com.hazelcast.core.Message;
+import com.hazelcast.core.MessageListener;
+import com.hazelcast.topic.TopicService;
 
 public class Cache {
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -23,14 +36,21 @@ public class Cache {
     public static long SECONDS = 1000;
     public static long MINUTES = SECONDS * 60;
     
-	private static Map<String, Expiring> map = new ConcurrentHashMap<String, Expiring>();
-    private static Map<String, Serializable> globalCache = null;
+//    private static Map<String, Expiring> map = new MapMaker().concurrencyLevel(10).makeMap();
+    
+    private static Map<String, Expiring> map = new ConcurrentHashMap<String, Expiring>();
+    private static Map<String, Route> routesCache = null;
+    
+    public static Map<String, Route> getRoutes() {
+    	return routesCache;
+    }
     	
-	public static Serializable getGlobal(String key) {
-		return globalCache.get(key);
+	public static Serializable getRoute(String key) {
+		return routesCache.get(key);
 	}	
-    public static void setGlobal(String key, Serializable value) {
-    	globalCache.put(key, value);
+    public static void setRoute(String key, Route value) {
+    	routesCache.put(key, value);
+    	routesChanged.set(true);
     }
 	public static Object get(String key) {
 		Expiring expiring = map.get(key);
@@ -65,7 +85,9 @@ public class Cache {
     	log.info(" ***** map size: " + map.size());
     }
     
-	public static void init() {
+    private static HazelcastInstance instance = null;
+    
+	public static void init() throws ExecutionException, InterruptedException {
 	
         Config cfg = new Config();
         
@@ -77,20 +99,85 @@ public class Cache {
         join.getMulticastConfig().setEnabled(false);
         join.getTcpIpConfig().addMember(HC_MASTER);
 
-        HazelcastInstance instance = Hazelcast.newHazelcastInstance(cfg);
-        globalCache = instance.getMap("virtuoSOA-routes");
+        instance = Hazelcast.newHazelcastInstance(cfg);
+        routesCache = instance.getMap("virtuoSOA-routes");
  
         log.info(" ***** Cache contains: "+ map.size() + " items");
+
+        ITopic<Command> topic = instance.getTopic("commands");
+        topic.addMessageListener(listener);
 
     	ste = new BackgroundCacheCleanup();
 	    ste.startScheduleTask();
 	}
-	public static void cleanUp() {
+	
+	
+	private static CommandListener listener = new CommandListener();
+	
+    public static void broadcast(Command command) throws ExecutionException, InterruptedException {
+        ITopic<Command> topic = instance.getTopic("commands");
+        topic.publish(command);
+		log.info(" xxxxxxxxxxxxxxxxxxx published " + command.text);
+    }
+
+    static class CommandListener implements MessageListener<Command> {
+		@Override
+		public void onMessage(Message<Command> message) {
+			log.info(" xxxxxxxxxxxxxxxxxxx received " + message.getMessageObject().text);
+			switch (message.getMessageObject().code) {
+				case RELOAD_ROUTES:
+					try {
+						Main.addAllRoutes();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					break;
+				case PING: break;
+			}
+		}
+    }
+	
+    static class Command implements Serializable {
+		private static final long serialVersionUID = -5612641101914170529L;
+		public String text;
+		public codes code;
+		
+		public static enum codes {
+			RELOAD_ROUTES,
+			PING
+		}
+		
+		public Command() {
+			
+		}
+		
+		public Command(codes code, String text) {
+			this.code = code;
+			this.text = text;
+		}
+		
+		public static Command reloadRoutes() {
+			return new Command(Command.codes.RELOAD_ROUTES, "reload routes");
+		}
+		
+		public static Command ping() {
+			return new Command(Command.codes.PING, "piiiing!!!");
+		}
+		
+    }
+	
+    public static AtomicBoolean routesChanged = new AtomicBoolean(false);
+	
+	public static void cleanUp() throws ExecutionException, InterruptedException {
+		if (routesChanged.get()) {
+			broadcast(Command.reloadRoutes());
+		}
     	for (Entry<String, Expiring> entry: map.entrySet()) {
     		if (entry.getValue().expired()){
-//        		log.info("removing " + entry.getKey());
+        		log.finest("removing " + entry.getKey());
     			map.remove(entry.getKey());
-//        		log.info("removed " + entry.getKey());
+        		log.finest("removed " + entry.getKey());
     		}
     	}
 	}

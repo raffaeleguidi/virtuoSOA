@@ -3,10 +3,11 @@ package org.virtuosoa.proxy;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import org.virtuosoa.cache.Cache;
@@ -15,7 +16,6 @@ import org.virtuosoa.models.Route;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 import com.predic8.membrane.core.HttpRouter;
 import com.predic8.membrane.core.rules.ServiceProxy;
 import com.predic8.membrane.core.rules.ServiceProxyKey;
@@ -25,7 +25,7 @@ public class Main {
 	private static final Logger log = Logger.getAnonymousLogger();
 
 	static final int PORT = Integer.parseInt(System.getProperty("port", "4000"));
-	static HttpRouter router = new HttpRouter();
+	static HttpRouter router = null; // = new HttpRouter();
     
     public static ServiceProxy addRoute(String source) throws IOException {
     	Route route = Route.find(source);
@@ -43,7 +43,7 @@ public class Main {
 		return sp;
     }
     
-    public static void loadRoutes() throws IOException {
+    public static void loadRoutesFromJson() throws IOException {
     	if (!new File("routes.json").exists()) {
     		log.info("routes.json not found - skipping (you should have specified a master instance to connect to)");
     		return;
@@ -55,20 +55,29 @@ public class Main {
 			Route route = routes[i];
 			route.save();
 			log.info("loaded route: " + route.source + " for method " + route.method);
-			addRoute(route);
 		}
 		log.info("loaded " + routes.length + " routes from file");
     }
     
-    public static void saveRoutes() throws IOException {
+    public static void addAllRoutes() throws Exception {
+    	if (router != null) router.stop();
+    	router = new HttpRouter();
     	
-    	// to be removed
-
+    	for (Entry<String, Route> entry : Cache.getRoutes().entrySet()) {
+    		addRoute(entry.getValue());
+		}
+		router.getTransport().setPrintStackTrace(true);
+		router.init();	
+		Cache.routesChanged.set(false);
+    }
+    
+	// to be removed
+    public static void saveRoutes() throws IOException {
     	BufferedWriter bw = new BufferedWriter(new FileWriter(new File("routes.json")));
     	Gson gson = new Gson();
     	
     	Route[] routes = new Route[]{
-    			new Route("monitor.virtuoso", "10.232.132.100", "GET", 3000, 1000, 5 * Cache.MINUTES)
+    		new Route("monitor.virtuoso", "10.232.132.100", "GET", 3000, 1000, 5 * Cache.MINUTES)
     	};
     	bw.write(gson.toJson(routes));
     	bw.close();
@@ -78,10 +87,8 @@ public class Main {
 		
 		Cache.init();
 		 
-		loadRoutes();
-
-		router.getTransport().setPrintStackTrace(true);
-		router.init();
+		loadRoutesFromJson();
+		addAllRoutes();
 
 		log.info("membrane-proxy started");
 	}
