@@ -29,9 +29,10 @@ public class CachingInterceptor extends AbstractInterceptor {
 		Response rs = exchange.getResponse();
 		Request rq = exchange.getRequest();
 		String key = rq.getHeader().getFirstValue("Cache-Key");
+		String traceId = exchange.getRequest().getHeader().getFirstValue("Trace-Id");
 		String routeKey = rq.getHeader().getFirstValue("Route-Key");
 		Route route = Route.find(routeKey);
-		log.info("looking in cache");
+		log.info("looking in cache using route " + route);
 		if (route.cache > 0) {
 			log.info("saving in cache");
 			log.info("Cache-Key " + key );
@@ -41,24 +42,20 @@ public class CachingInterceptor extends AbstractInterceptor {
 			Cache.set("body:" + key, rs.getBodyAsStringDecoded(), route.cache);
 			Cache.set("type:" + key, rs.getHeader().getContentType(), route.cache);
 		}
-		log.info("request served in " + (System.currentTimeMillis() - startedAt) + " msecs");
+		log.info("request " + traceId + " served in " + (System.currentTimeMillis() - startedAt) + " msecs");
 		return Outcome.CONTINUE;
 	};
 	
 	private long startedAt;
 	
-	private String stripPort(String host) {
-		return host.substring(0, host.indexOf(":"));
-	}
+	//String traceId;
 
 	@Override
 	public Outcome handleRequest(Exchange exchange) throws MalformedURLException {
 		startedAt = System.currentTimeMillis();
+		String traceId = exchange.getRequest().getHeader().getFirstValue("Trace-Id");
 		
 		Request rq = exchange.getRequest();
-		
-		String routeKey = stripPort(rq.getHeader().getHost()) + "$" + rq.getMethod();
-		exchange.getRequest().getHeader().add("Route-Key", routeKey);
 		
 		String key =  rq.getMethod() + "$" + rq.getHeader().getHost() + "$" + rq.getUri();
 		exchange.getRequest().getHeader().add("Cache-Key", key);
@@ -66,16 +63,17 @@ public class CachingInterceptor extends AbstractInterceptor {
 		// this can work only on explicit verbs
 		// have to try it in two steps - first explicit and 2nd with *
 		// better move it in a AbstractRoutingInterceptor for reuse
+		String routeKey = rq.getHeader().getFirstValue("Route-Key");
 		Route route = Route.find(routeKey);
 		log.info("looking for routeKey " + routeKey + " I found " + route);
 		if (route.cache > 0) {
 			Integer code = (Integer) Cache.get("sCode:" + key);
-			log.debug("code for " + key + " is " + code);
+			//log.debug("code for " + key + " is " + code);
 			if (code != null) {
 				Response fromCache = new Response();
 				fromCache.getHeader().add("X-Served-In", "" + (System.currentTimeMillis() - startedAt));
 				fromCache.getHeader().add("X-Served-From", "local cache");
-				log.info("key " + key + " served from cache");
+				log.info("request " + traceId + " and key " + key + " served from cache");
 				fromCache.setStatusCode(code.intValue());
 				fromCache.setStatusMessage((String) Cache.get("sText:" + key));
 				fromCache.setBodyContent(((String) Cache.get("body:" + key)).getBytes());
