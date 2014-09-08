@@ -7,13 +7,16 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 import org.virtuosoa.cache.Cache;
 import org.virtuosoa.cluster.Cluster;
 import org.virtuosoa.interceptors.CachingInterceptor;
-import org.virtuosoa.interceptors.LoggingInterceptor;
+import org.virtuosoa.interceptors.BaseVirtuosoInterceptor;
 import org.virtuosoa.models.Route;
 
+import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.MetricRegistry;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.predic8.membrane.core.HttpRouter;
@@ -37,7 +40,7 @@ public class Main {
     public static ServiceProxy addRoute(Route route) throws IOException {
        	ServiceProxyKey key = new ServiceProxyKey(route.source, route.method, ".*", PORT); // <- should be one for GET (with a cache interceptor) and one for other methods 
     	ServiceProxy sp = new ServiceProxy(key, route.destination, route.destinationPort);
-    	sp.getInterceptors().add(new LoggingInterceptor());
+    	sp.getInterceptors().add(new BaseVirtuosoInterceptor());
     	if (route.cache > 0) {
     		sp.getInterceptors().add(new CachingInterceptor());
     	}
@@ -87,6 +90,7 @@ public class Main {
     }
     
     static HouseKeeper ste = null;
+    public static final MetricRegistry metrics = new MetricRegistry();
     
 	public static void init() throws Exception {
 		Cache.init();
@@ -95,6 +99,12 @@ public class Main {
 	    ste.startScheduleTask();
 		loadRoutesFromJson();
 		addAllRoutes();
+		
+		ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics)
+	       .convertRatesTo(TimeUnit.SECONDS)
+	       .convertDurationsTo(TimeUnit.MILLISECONDS)
+	       .build();
+		reporter.start(10, TimeUnit.SECONDS);
 	}
 
 	public static void main(String[] args) throws Exception {

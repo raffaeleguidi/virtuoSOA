@@ -5,19 +5,24 @@ import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.virtuosoa.models.Route;
+import org.virtuosoa.proxy.Main;
 
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.Meter;
 import com.predic8.membrane.core.exchange.Exchange;
 import com.predic8.membrane.core.http.Response;
 import com.predic8.membrane.core.interceptor.AbstractInterceptor;
 import com.predic8.membrane.core.interceptor.Outcome;
 
-public class LoggingInterceptor extends AbstractInterceptor {
-	private static final Logger log = Logger.getLogger(LoggingInterceptor.class.getCanonicalName());
+public class BaseVirtuosoInterceptor extends AbstractInterceptor {
+	private static final Logger log = Logger.getLogger(BaseVirtuosoInterceptor.class.getCanonicalName());
+	private final Meter requests = Main.metrics.meter("requests");
+	private final Meter responses = Main.metrics.meter("responses");
+	private final Histogram responseTime = Main.metrics.histogram("responseTime");
 	
 	private String stripPort(String host) {
 		return host.substring(0, host.indexOf(":"));
 	}
-	
 	
 	@Override public void handleAbort(Exchange exchange) {
 		log.info("handleAbort at  " + (System.currentTimeMillis()));
@@ -28,7 +33,8 @@ public class LoggingInterceptor extends AbstractInterceptor {
 	};
 	
 	@Override public Outcome handleResponse(Exchange exchange) throws Exception {
-		//String traceId = exchange.getRequest().getHeader().getFirstValue("Trace-Id");
+		responses.mark();
+		responseTime.update(System.currentTimeMillis() - startedAt);
 		exchange.getResponse().getHeader().add("Trace-Id", traceId);
 		log.info("Request " + exchange.getRequest().getUri() + " with Trace-Id " + traceId + " served in " + (System.currentTimeMillis() - startedAt) + " msecs");
 		return Outcome.CONTINUE;
@@ -39,6 +45,7 @@ public class LoggingInterceptor extends AbstractInterceptor {
 	
 	@Override
 	public Outcome handleRequest(Exchange exchange) throws MalformedURLException {
+		requests.mark();
 		startedAt = System.currentTimeMillis();
 		traceId = exchange.getRequest().getHeader().getFirstValue("Trace-Id");
 		if (traceId == null) {
