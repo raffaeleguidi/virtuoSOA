@@ -1,14 +1,16 @@
-package org.virtuosoa.cache;
+package org.virtuosoa.proxy;
 
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-public class BackgroundCacheCleanup {
+import org.virtuosoa.cache.Cache;
+import org.virtuosoa.cluster.Cluster;
+
+public class HouseKeeper {
 	private static final Logger log = Logger.getAnonymousLogger();
 
 	private final ScheduledExecutorService scheduler = Executors
@@ -33,10 +35,12 @@ public class BackgroundCacheCleanup {
         }, 0, 30, TimeUnit.SECONDS);
     }
 
-    private void cleanupCache() throws ExecutionException, InterruptedException {
+    private void cleanupCache() throws Exception {
         log.info("starting cache cleanup");
     	Cache.cleanUp();
     	Cache.stats();
+    	if (Cluster.routesChanged.get()) 
+    		Main.addAllRoutes();
         log.info("ended cache cleanup");
     }
 }

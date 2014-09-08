@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import org.virtuosoa.cache.Cache;
+import org.virtuosoa.cluster.Cluster;
 import org.virtuosoa.interceptors.CachingInterceptor;
 import org.virtuosoa.models.Route;
 
@@ -21,7 +22,7 @@ import com.predic8.membrane.core.rules.ServiceProxyKey;
 
 public class Main {
 	
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = Logger.getLogger(Main.class.getSimpleName());
 
 	static final int PORT = Integer.parseInt(System.getProperty("port", "4000"));
 	static HttpRouter router = null; // = new HttpRouter();
@@ -62,12 +63,12 @@ public class Main {
     	if (router != null) router.stop();
     	router = new HttpRouter();
     	
-    	for (Entry<String, Route> entry : Cache.getRoutes().entrySet()) {
+    	for (Entry<String, Route> entry : Cluster.getRoutes().entrySet()) {
     		addRoute(entry.getValue());
 		}
 		router.getTransport().setPrintStackTrace(true);
 		router.init();	
-		Cache.routesChanged.set(false);
+		Cluster.routesChanged.set(false);
     }
     
 	// to be removed
@@ -85,6 +86,7 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 		
 		Cache.init();
+		Cluster.init();
 		 
 		loadRoutesFromJson();
 		addAllRoutes();
