@@ -20,7 +20,8 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.ssl.SslContext;
-import io.netty.handler.timeout.ReadTimeoutHandler;
+
+import org.nexxy.http.reverseproxy.HttpReverseProxyServerHandler;
 
 public class HttpReverseProxyServerInitializer extends ChannelInitializer<SocketChannel> {
 
