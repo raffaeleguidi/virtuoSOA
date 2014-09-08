@@ -1,19 +1,16 @@
 package org.virtuosoa.interceptors;
 
-import org.virtuosoa.models.Route;
-
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.logging.Logger;
 
 import org.virtuosoa.cache.Cache;
+import org.virtuosoa.models.Route;
 
-import com.predic8.membrane.core.exchange.*;
-import com.predic8.membrane.core.http.Header;
+import com.predic8.membrane.core.exchange.Exchange;
 import com.predic8.membrane.core.http.Request;
 import com.predic8.membrane.core.http.Response;
-import com.predic8.membrane.core.interceptor.*;
-import com.predic8.membrane.core.ws.relocator.Relocator;
+import com.predic8.membrane.core.interceptor.AbstractInterceptor;
+import com.predic8.membrane.core.interceptor.Outcome;
 
 public class CachingInterceptor extends AbstractInterceptor {
 	private static final Logger log = Logger.getAnonymousLogger();

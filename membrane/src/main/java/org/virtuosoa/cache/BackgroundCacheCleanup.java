@@ -20,7 +20,8 @@ public class BackgroundCacheCleanup {
     * the task, or check if it's done (for recurring tasks, that's not
     * going to be very useful)
     */
-    final ScheduledFuture<?> taskHandle = scheduler.scheduleAtFixedRate(
+    @SuppressWarnings("unused")
+	final ScheduledFuture<?> taskHandle = scheduler.scheduleAtFixedRate(
         new Runnable() {
             public void run() {
                 try {
