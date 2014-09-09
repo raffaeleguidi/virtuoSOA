@@ -20,10 +20,12 @@ public class BaseVirtuosoInterceptor extends AbstractInterceptor {
 	private final Meter responses = Main.metrics.meter("responses");
 	private final Histogram responseTime = Main.metrics.histogram("responseTime");
 	
-	private String stripPort(String host) {
-		return host.substring(0, host.indexOf(":"));
-	}
+	private String routeKey;
 	
+	public BaseVirtuosoInterceptor(Route route) {
+		routeKey = route.key();
+	}
+
 	@Override public void handleAbort(Exchange exchange) {
 		log.info("handleAbort at  " + (System.currentTimeMillis()));
 		Response resp = new Response();
@@ -36,7 +38,8 @@ public class BaseVirtuosoInterceptor extends AbstractInterceptor {
 		responses.mark();
 		responseTime.update(System.currentTimeMillis() - startedAt);
 		exchange.getResponse().getHeader().add("Trace-Id", traceId);
-		log.info("Request " + exchange.getRequest().getUri() + " with Trace-Id " + traceId + " served in " + (System.currentTimeMillis() - startedAt) + " msecs");
+		exchange.getResponse().getHeader().add("Route-Key", routeKey);
+		log.info("Response to '" + exchange.getRequest().getUri() + "' with Trace-Id " + traceId + " served in " + (System.currentTimeMillis() - startedAt) + " msecs");
 		return Outcome.CONTINUE;
 	};
 	
@@ -52,15 +55,8 @@ public class BaseVirtuosoInterceptor extends AbstractInterceptor {
 			traceId = UUID.randomUUID().toString();
 			exchange.getRequest().getHeader().add("Trace-Id", traceId);
 		}
-		String routeKey = stripPort(exchange.getRequest().getHeader().getHost()) + "$" + exchange.getRequest().getMethod();
-		Route route = Route.find(routeKey);
-		if (route == null) {
-			routeKey = stripPort(exchange.getRequest().getHeader().getHost()) + "$*";
-			route = Route.find(routeKey);
-		}
 		exchange.getRequest().getHeader().add("Route-Key", routeKey);
-		
-		log.debug("Trace-Id " + traceId + " request received");
+		log.info("Request '" + exchange.getRequest().getUri() + "' with Trace-Id " + traceId + " received");
 		return Outcome.CONTINUE;
 	}
 }

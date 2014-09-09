@@ -3,6 +3,7 @@
 		"source":"monitor.virtuoso",
 		"destination":"10.232.132.100",
 		"method":"GET",
+		"path":".*",
 		"destinationPort":3000,
 		"timeout":1000,
 		"cache":300000
@@ -11,6 +12,7 @@
       "source":"monitor.virtuoso",
       "destination":"10.232.132.100",
       "method":"*",
+	  "path":".*",
       "destinationPort":3000,
       "timeout":1000,
       "cache":0
@@ -19,6 +21,7 @@
 		"source":"test.virtuoso",
 		"destination":"10.232.132.100",
 		"method":"GET",
+    	"path":".*",
 		"destinationPort":3000,
 		"timeout":1000,
 		"cache":0
@@ -27,6 +30,7 @@
 		"source":"localhost",
 		"destination":"10.232.132.100",
 		"method":"GET",
+		"path":".*",
 		"destinationPort":3000,
 		"timeout":1000,
 		"cache": 0

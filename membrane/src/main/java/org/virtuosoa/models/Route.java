@@ -13,11 +13,12 @@ public class Route implements Serializable {
 	public String source;
 	public String destination;
 	public String method;
+	public String path;
 	public int destinationPort;
 	public int timeout;
 	public long cache;
 
-	public Route(String source, String destination, String method, int destinationPort, int timeout, long cache) {
+	public Route(String source, String destination, String method, String path, int destinationPort, int timeout, long cache) {
 		this.source = source;
 		this.destination = destination;
 		this.method = method;
@@ -26,12 +27,15 @@ public class Route implements Serializable {
 		this.cache = cache;
 	}
 	public Route save() {
-		Cluster.setRoute("route:" + source + "$" + method, this);
+		Cluster.setRoute(key(), this);
 		return this;
 	}
-	public static Route find(String sourceAndMethod) {
+	public static Route lookup(String key) {
 		// see http://hazelcast.org/docs/latest/manual/html/query.html
 		// to query the map with sql or criteria query
-		return (Route) Cluster.getRoute("route:" + sourceAndMethod);
+		return (Route) Cluster.getRoute(key);
 	}
-}
+	public String key() {
+		return "route:" + this.source +"$" + this.method + "$" + this.path; 
+	}
+ }

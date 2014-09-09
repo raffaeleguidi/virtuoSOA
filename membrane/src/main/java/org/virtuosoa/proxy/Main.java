@@ -33,16 +33,16 @@ public class Main {
 	static HttpRouter router = null; // = new HttpRouter();
     
     public static ServiceProxy addRoute(String source) throws IOException {
-    	Route route = Route.find(source);
+    	Route route = Route.lookup(source);
     	return addRoute(route);
      }
     
     public static ServiceProxy addRoute(Route route) throws IOException {
-       	ServiceProxyKey key = new ServiceProxyKey(route.source, route.method, ".*", PORT); // <- should be one for GET (with a cache interceptor) and one for other methods 
+       	ServiceProxyKey key = new ServiceProxyKey(route.source, route.method, route.path, PORT); // <- should be one for GET (with a cache interceptor) and one for other methods 
     	ServiceProxy sp = new ServiceProxy(key, route.destination, route.destinationPort);
-    	sp.getInterceptors().add(new BaseVirtuosoInterceptor());
+    	sp.getInterceptors().add(new BaseVirtuosoInterceptor(route));
     	if (route.cache > 0) {
-    		sp.getInterceptors().add(new CachingInterceptor());
+    		sp.getInterceptors().add(new CachingInterceptor(route));
     	}
 		router.add(sp);
 		log.info("added route on " + route.source + " for method " + route.method);
@@ -83,7 +83,7 @@ public class Main {
     	Gson gson = new Gson();
     	
     	Route[] routes = new Route[]{
-    		new Route("monitor.virtuoso", "10.232.132.100", "GET", 3000, 1000, 5 * Cache.MINUTES)
+    		new Route("monitor.virtuoso", "10.232.132.100", "GET", ".*", 3000, 1000, 5 * Cache.MINUTES)
     	};
     	bw.write(gson.toJson(routes));
     	bw.close();

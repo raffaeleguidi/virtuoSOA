@@ -14,6 +14,11 @@ import com.predic8.membrane.core.interceptor.Outcome;
 
 public class CachingInterceptor extends AbstractInterceptor {
 	private static final Logger log = Logger.getLogger(CachingInterceptor.class.getCanonicalName());
+	private String routeKey;
+	
+	public CachingInterceptor(Route route) {
+		routeKey = route.key();
+	}
 	
 	@Override public void handleAbort(Exchange exchange) {
 		log.info("handleAbort at  " + (System.currentTimeMillis()));
@@ -30,8 +35,8 @@ public class CachingInterceptor extends AbstractInterceptor {
 		Request rq = exchange.getRequest();
 		String key = rq.getHeader().getFirstValue("Cache-Key");
 		String traceId = exchange.getRequest().getHeader().getFirstValue("Trace-Id");
-		String routeKey = rq.getHeader().getFirstValue("Route-Key");
-		Route route = Route.find(routeKey);
+//		String routeKey = rq.getHeader().getFirstValue("Route-Key");
+		Route route = Route.lookup(routeKey);
 		log.info("looking in cache using route " + route);
 		if (route.cache > 0) {
 			log.info("saving in cache");
@@ -57,12 +62,10 @@ public class CachingInterceptor extends AbstractInterceptor {
 		
 		String key =  rq.getMethod() + "$" + rq.getHeader().getHost() + "$" + rq.getUri();
 		exchange.getRequest().getHeader().add("Cache-Key", key);
-		String routeKey = rq.getHeader().getFirstValue("Route-Key");
-		Route route = Route.find(routeKey);
+		Route route = Route.lookup(routeKey);
 		log.trace("looking for routeKey " + routeKey + " I found " + route);
 		if (route.cache > 0) {
 			Integer code = (Integer) Cache.get("sCode:" + key);
-			//log.debug("code for " + key + " is " + code);
 			if (code != null) {
 				Response fromCache = new Response();
 				fromCache.getHeader().add("X-Served-In", "" + (System.currentTimeMillis() - startedAt));
