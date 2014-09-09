@@ -19,7 +19,7 @@ public class CachingInterceptor extends AbstractInterceptor {
 		log.info("handleAbort at  " + (System.currentTimeMillis()));
 		Response resp = new Response();
 		resp.setBodyContent("transaction aborted".getBytes());
-		resp.setStatusCode(200);
+		resp.setStatusCode(500);
 		exchange.setResponse(resp);
 	};
 	
@@ -48,8 +48,6 @@ public class CachingInterceptor extends AbstractInterceptor {
 	
 	private long startedAt;
 	
-	//String traceId;
-
 	@Override
 	public Outcome handleRequest(Exchange exchange) throws MalformedURLException {
 		startedAt = System.currentTimeMillis();
@@ -59,13 +57,9 @@ public class CachingInterceptor extends AbstractInterceptor {
 		
 		String key =  rq.getMethod() + "$" + rq.getHeader().getHost() + "$" + rq.getUri();
 		exchange.getRequest().getHeader().add("Cache-Key", key);
-
-		// this can work only on explicit verbs
-		// have to try it in two steps - first explicit and 2nd with *
-		// better move it in a AbstractRoutingInterceptor for reuse
 		String routeKey = rq.getHeader().getFirstValue("Route-Key");
 		Route route = Route.find(routeKey);
-		log.info("looking for routeKey " + routeKey + " I found " + route);
+		log.trace("looking for routeKey " + routeKey + " I found " + route);
 		if (route.cache > 0) {
 			Integer code = (Integer) Cache.get("sCode:" + key);
 			//log.debug("code for " + key + " is " + code);
@@ -78,10 +72,16 @@ public class CachingInterceptor extends AbstractInterceptor {
 				fromCache.setStatusMessage((String) Cache.get("sText:" + key));
 				fromCache.setBodyContent(((String) Cache.get("body:" + key)).getBytes());
 				fromCache.getHeader().setContentType(Cache.getAsString("type:" + key));
+				// disables http cache since we are handling it in memory
+				fromCache.getHeader().add("Cache-Control", "no-cache");
+				fromCache.getHeader().add("Cache-Control", "no-store");
+				fromCache.getHeader().add("Cache-Control", "must-revalidate");
+				fromCache.getHeader().add("Pragma", "no-cache");
+				fromCache.getHeader().add("Expires", "must-0");
 				exchange.setResponse(fromCache);
 				return Outcome.RETURN;
 			} else {
-				log.info("key " + key + " not found in cache");
+				log.trace("key " + key + " not found in cache");
 			}
 		}
 
