@@ -43,6 +43,7 @@ public class Main {
     	sp.getInterceptors().add(new BaseVirtuosoInterceptor(route));
     	if (route.cache > 0) {
     		sp.getInterceptors().add(new CachingInterceptor(route));
+    		log.info(" *** added cache on " + route.source + " for method " + route.method);
     	}
 		router.add(sp);
 		log.info("added route on " + route.source + " for method " + route.method);

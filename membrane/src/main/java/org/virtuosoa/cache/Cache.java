@@ -26,6 +26,12 @@ public class Cache {
 			return null;
 		}
 	}	
+	public static void delete(String key) {
+    	map.remove(key);
+	}
+	public static void remove(String key) {
+    	map.remove(key);
+	}
     public static void set(String key, Object value, long expiresIn ) {
     	map.put(key, Expiring.in(value, expiresIn));
     }

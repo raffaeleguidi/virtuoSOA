@@ -120,6 +120,7 @@ public class Cluster {
 		return routesCache.get(key);
 	}	
     public static void setRoute(String key, Route value) {
+    	routesCache.remove(key);
     	routesCache.put(key, value);
     	routesChanged.set(true);
     }    

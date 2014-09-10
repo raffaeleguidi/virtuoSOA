@@ -17,8 +17,6 @@ public class Route implements Serializable {
 	public int destinationPort;
 	public int timeout;
 	public long cache;
-	public boolean healthy = true;
-	public long lastHealthChecked = System.currentTimeMillis();
 	
 	public Route(String source, String destination, String method, String path, int destinationPort, int timeout, long cache) {
 		this.source = source;
@@ -39,9 +37,5 @@ public class Route implements Serializable {
 	}
 	public String key() {
 		return "route:" + this.source +"$" + this.method + "$" + this.path; 
-	}
-	public void setHealth(boolean healthy) {
-		this.lastHealthChecked = System.currentTimeMillis();
-		this.healthy =  healthy;
 	}
  }

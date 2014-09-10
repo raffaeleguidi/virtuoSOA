@@ -4,7 +4,9 @@ import java.net.MalformedURLException;
 
 import org.apache.log4j.Logger;
 import org.virtuosoa.cache.Cache;
+import org.virtuosoa.models.CheckResult;
 import org.virtuosoa.models.Route;
+import org.virtuosoa.proxy.HealthCheck;
 
 import com.predic8.membrane.core.exchange.Exchange;
 import com.predic8.membrane.core.http.Request;
@@ -63,6 +65,7 @@ public class CachingInterceptor extends AbstractInterceptor {
 		String key =  rq.getMethod() + "$" + rq.getHeader().getHost() + "$" + rq.getUri();
 		exchange.getRequest().getHeader().add("Cache-Key", key);
 		Route route = Route.lookup(routeKey);
+
 		log.trace("looking for routeKey " + routeKey + " I found " + route);
 		if (route.cache > 0) {
 			Integer code = (Integer) Cache.get("sCode:" + key);
