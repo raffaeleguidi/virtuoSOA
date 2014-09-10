@@ -1,6 +1,7 @@
 package org.virtuosoa.proxy;
 
 
+import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -8,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.virtuosoa.cache.Cache;
 import org.virtuosoa.cluster.Cluster;
-
+import org.virtuosoa.models.Route;
 import org.apache.log4j.Logger;
  
 public class HouseKeeper {
@@ -28,20 +29,33 @@ public class HouseKeeper {
         new Runnable() {
             public void run() {
                 try {
-                    cleanupCache();
+                    doStuff();
                 }catch(Exception ex) {
                     ex.printStackTrace(); //or loggger would be better
                 }
             }
-        }, 0, 10, TimeUnit.MINUTES);
+        }, 0, 10, TimeUnit.SECONDS);
     }
 
     private void cleanupCache() throws Exception {
-        log.info("starting cache cleanup");
     	Cache.cleanUp();
     	Cache.stats();
     	if (Cluster.routesChanged.get()) 
     		Main.addAllRoutes();
-        log.info("ended cache cleanup");
+    }
+    
+    private void doHealthCheck() throws Exception {
+    	for (Entry<String, Route> entry : Cluster.getRoutes().entrySet()) {
+        	log.debug("healthcheck on " + entry.getValue().key() + " started");
+			HealthCheck.run(entry.getValue());
+		} 
+    }
+    
+    
+    private void doStuff() throws Exception {
+       	log.info("housekeeping thread started");
+       	cleanupCache();
+    	doHealthCheck();
+    	log.info("housekeeping thread ended");
     }
 }

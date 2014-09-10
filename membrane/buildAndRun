@@ -1,0 +1,2 @@
+mvn install eclipse:eclipse capsule:capsule
+java -jar target/membrane-proxy-1.0-SNAPSHOT-capsule.jar

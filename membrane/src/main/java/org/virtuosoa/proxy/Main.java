@@ -104,6 +104,7 @@ public class Main {
 	       .convertRatesTo(TimeUnit.SECONDS)
 	       .convertDurationsTo(TimeUnit.MILLISECONDS)
 	       .build();
+		
 		reporter.start(10, TimeUnit.SECONDS);
 	}
 

@@ -30,7 +30,7 @@ public class BaseVirtuosoInterceptor extends AbstractInterceptor {
 		log.info("handleAbort at  " + (System.currentTimeMillis()));
 		Response resp = new Response();
 		resp.setBodyContent("transaction aborted".getBytes());
-		resp.setStatusCode(200);
+		resp.setStatusCode(500);
 		exchange.setResponse(resp);
 	};
 	
@@ -49,6 +49,12 @@ public class BaseVirtuosoInterceptor extends AbstractInterceptor {
 	@Override
 	public Outcome handleRequest(Exchange exchange) throws MalformedURLException {
 		requests.mark();
+		
+		if (!Route.lookup(routeKey).healthy) {
+			// TBD
+			return Outcome.ABORT;
+		}
+		
 		startedAt = System.currentTimeMillis();
 		traceId = exchange.getRequest().getHeader().getFirstValue("Trace-Id");
 		if (traceId == null) {

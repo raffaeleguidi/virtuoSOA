@@ -39,6 +39,7 @@
       "source":"httpbin.virtuoso",
       "destination":"httpbin.org",
       "method":"*",
+	  "path":".*",
       "destinationPort":80,
       "timeout":1000,
       "cache": 10000
