@@ -1,6 +1,13 @@
 package org.virtuosoa.interceptors;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.log4j.Logger;
 import org.virtuosoa.cache.Cache;
@@ -38,6 +45,24 @@ public class CachingInterceptor extends AbstractVirtuosoInterceptor {
 		exchange.setResponse(resp);
 	};
 	
+	byte[] streamToArray(java.io.InputStream in) {
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+		int nRead;
+		byte[] data = new byte[16384];
+
+		try {
+			while ((nRead = in.read(data, 0, data.length)) != -1) {
+			  buffer.write(data, 0, nRead);
+			}
+			buffer.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return buffer.toByteArray();
+	}
+	
 	@Override public Outcome handleResponse(Exchange exchange) throws Exception {
 		exchange.getResponse().getHeader().add("X-Served-In", "" + (System.currentTimeMillis() - startedAt));
 		exchange.getResponse().getHeader().add("X-Served-From", "upstream provider");
@@ -52,8 +77,19 @@ public class CachingInterceptor extends AbstractVirtuosoInterceptor {
 			log.info("Route-Key " + getId() );
 			Cache.set("sCode:" + key, new Integer(rs.getStatusCode()), expiration);
 			Cache.set("sText:" + key, rs.getStatusMessage(), expiration);
-			Cache.set("body:" + key, rs.getBodyAsStringDecoded(), expiration);
+			Cache.set("body:" + key, streamToArray(rs.getBodyAsStream()), expiration);
+			//System.out.print(" *************** " + rs.getBodyAsStringDecoded());
 			Cache.set("type:" + key, rs.getHeader().getContentType(), expiration);
+			
+			rs.getHeader().removeFields("Cache-Control");
+			rs.getHeader().removeFields("Pragma");
+			rs.getHeader().removeFields("Expires");
+			
+			rs.getHeader().add("Cache-Control", "no-cache");
+			rs.getHeader().add("Cache-Control", "no-store");
+			rs.getHeader().add("Cache-Control", "must-revalidate");
+			rs.getHeader().add("Pragma", "no-cache");
+			rs.getHeader().add("Expires", "0");
 		}
 		log.info("request " + traceId + " served in " + (System.currentTimeMillis() - startedAt) + " msecs");
 		return Outcome.CONTINUE;
@@ -71,12 +107,12 @@ public class CachingInterceptor extends AbstractVirtuosoInterceptor {
 		String key =  rq.getMethod() + "$" + rq.getHeader().getHost() + "$" + rq.getUri();
 		exchange.getRequest().getHeader().add("Cache-Key", key);
 
-		exchange.getRequest().getHeader().add("Cache-Control", "no-cache");
-		exchange.getRequest().getHeader().add("Cache-Control", "no-store");
-		exchange.getRequest().getHeader().add("Cache-Control", "must-revalidate");
-		exchange.getRequest().getHeader().add("Pragma", "no-cache");
-		exchange.getRequest().getHeader().add("Expires", "must-0");
-		
+//		exchange.getResponse().getHeader().add("Cache-Control", "no-cache");
+//		exchange.getResponse().getHeader().add("Cache-Control", "no-store");
+//		exchange.getResponse().getHeader().add("Cache-Control", "must-revalidate");
+//		exchange.getResponse().getHeader().add("Pragma", "no-cache");
+//		exchange.getResponse().getHeader().add("Expires", "0");
+//		
 		if (expiration > 0) {
 			Integer code = (Integer) Cache.get("sCode:" + key);
 			if (code != null) {
@@ -86,14 +122,15 @@ public class CachingInterceptor extends AbstractVirtuosoInterceptor {
 				log.info("request " + traceId + " and key " + key + " served from cache");
 				fromCache.setStatusCode(code.intValue());
 				fromCache.setStatusMessage((String) Cache.get("sText:" + key));
-				fromCache.setBodyContent(((String) Cache.get("body:" + key)).getBytes());
+				fromCache.setBodyContent((byte[])Cache.get("body:" + key));
 				fromCache.getHeader().setContentType(Cache.getAsString("type:" + key));
 				// disables http cache since we are handling it in memory
 				fromCache.getHeader().add("Cache-Control", "no-cache");
 				fromCache.getHeader().add("Cache-Control", "no-store");
 				fromCache.getHeader().add("Cache-Control", "must-revalidate");
 				fromCache.getHeader().add("Pragma", "no-cache");
-				fromCache.getHeader().add("Expires", "must-0");
+				fromCache.getHeader().add("Expires", "0");
+
 				exchange.setResponse(fromCache);
 				return Outcome.RETURN;
 			} else {

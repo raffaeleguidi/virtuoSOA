@@ -62,19 +62,32 @@
 			</basicAuthentication>	
 			<adminConsole />
 	    </serviceProxy>
+       
+       <serviceProxy host="internet.virtuoso">
+         <interceptor refid="cacheMonitor"/>
+         <balancer>
+             <clusters>
+                  <cluster name="Default">
+                     <node host="www.sfoglialanotizia.net" port="80"/>  
+                     <node host="beta.sfoglialanotizia.net" port="80"/>
+                  </cluster>
+             </clusters>
+             <roundRobinStrategy/>
+         </balancer>
+      </serviceProxy>
 	      	
-		<serviceProxy host="monitor.virtuoso" method="GET">
+		<!-- <serviceProxy host="monitor.virtuoso" method="GET">
 			<interceptor refid="cacheMonitor"/>
 			<balancer>
                 <clusters>
                     <cluster id="Default" name="Default">
-				        <node host="10.232.132.100" port="3000"/>	
-						<node host="8rmw00004738" port="3001"/>
-				    </cluster>
+   				          <node host="10.232.132.100" port="3000"/>	
+   						    <node host="8rmw00004738" port="3001"/>
+   				     </cluster>
                 </clusters>
                 <roundRobinStrategy/>
             </balancer>
-			<!-- <target host="10.232.132.100" port="3000"/> -->
+			<target host="10.232.132.100" port="3000"/>
 		</serviceProxy>
         
 		<serviceProxy host="monitor.virtuoso">
@@ -87,7 +100,7 @@
                 </clusters>
                 <roundRobinStrategy/>
             </balancer>
-			<!-- <target host="10.232.132.100" port="3000"/> -->
+			<target host="10.232.132.100" port="3000"/>
 		</serviceProxy>
         
 		<serviceProxy host="test.virtuoso">
@@ -100,7 +113,7 @@
                 </clusters>
                 <roundRobinStrategy/>
             </balancer>
-		</serviceProxy>	
+		</serviceProxy>	 -->
 		
 	
 	</router>
