@@ -4,22 +4,30 @@ import java.net.MalformedURLException;
 
 import org.apache.log4j.Logger;
 import org.virtuosoa.cache.Cache;
-import org.virtuosoa.models.CheckResult;
-import org.virtuosoa.models.Route;
-import org.virtuosoa.proxy.HealthCheck;
 
 import com.predic8.membrane.core.exchange.Exchange;
 import com.predic8.membrane.core.http.Request;
 import com.predic8.membrane.core.http.Response;
-import com.predic8.membrane.core.interceptor.AbstractInterceptor;
 import com.predic8.membrane.core.interceptor.Outcome;
 
-public class CachingInterceptor extends AbstractInterceptor {
+public class CachingInterceptor extends AbstractVirtuosoInterceptor {
 	private static final Logger log = Logger.getLogger(CachingInterceptor.class.getCanonicalName());
-	private String routeKey;
 	
-	public CachingInterceptor(Route route) {
-		routeKey = route.key();
+	protected long expiration;
+	
+	public long getExpiration() {
+		return expiration;
+	}
+	public void setExpiration(long expiration) {
+		this.expiration = expiration;
+	}
+	
+	public CachingInterceptor() {
+		// noop
+	}
+	public CachingInterceptor(String routeId, long cacheFor) {
+		this.setId(routeId);
+		this.setExpiration(cacheFor);
 	}
 	
 	@Override public void handleAbort(Exchange exchange) {
@@ -37,17 +45,15 @@ public class CachingInterceptor extends AbstractInterceptor {
 		Request rq = exchange.getRequest();
 		String key = rq.getHeader().getFirstValue("Cache-Key");
 		String traceId = exchange.getRequest().getHeader().getFirstValue("Trace-Id");
-//		String routeKey = rq.getHeader().getFirstValue("Route-Key");
-		Route route = Route.lookup(routeKey);
-		log.info("looking in cache using route " + route);
-		if (route.cache > 0) {
+		log.info("looking in cache using route " + getId());
+		if (expiration > 0 && rs.getStatusCode() == 200) {
 			log.info("saving in cache");
 			log.info("Cache-Key " + key );
-			log.info("Route-Key " + routeKey );
-			Cache.set("sCode:" + key, new Integer(rs.getStatusCode()), route.cache);
-			Cache.set("sText:" + key, rs.getStatusMessage(), route.cache);
-			Cache.set("body:" + key, rs.getBodyAsStringDecoded(), route.cache);
-			Cache.set("type:" + key, rs.getHeader().getContentType(), route.cache);
+			log.info("Route-Key " + getId() );
+			Cache.set("sCode:" + key, new Integer(rs.getStatusCode()), expiration);
+			Cache.set("sText:" + key, rs.getStatusMessage(), expiration);
+			Cache.set("body:" + key, rs.getBodyAsStringDecoded(), expiration);
+			Cache.set("type:" + key, rs.getHeader().getContentType(), expiration);
 		}
 		log.info("request " + traceId + " served in " + (System.currentTimeMillis() - startedAt) + " msecs");
 		return Outcome.CONTINUE;
@@ -64,10 +70,14 @@ public class CachingInterceptor extends AbstractInterceptor {
 		
 		String key =  rq.getMethod() + "$" + rq.getHeader().getHost() + "$" + rq.getUri();
 		exchange.getRequest().getHeader().add("Cache-Key", key);
-		Route route = Route.lookup(routeKey);
 
-		log.trace("looking for routeKey " + routeKey + " I found " + route);
-		if (route.cache > 0) {
+		exchange.getRequest().getHeader().add("Cache-Control", "no-cache");
+		exchange.getRequest().getHeader().add("Cache-Control", "no-store");
+		exchange.getRequest().getHeader().add("Cache-Control", "must-revalidate");
+		exchange.getRequest().getHeader().add("Pragma", "no-cache");
+		exchange.getRequest().getHeader().add("Expires", "must-0");
+		
+		if (expiration > 0) {
 			Integer code = (Integer) Cache.get("sCode:" + key);
 			if (code != null) {
 				Response fromCache = new Response();

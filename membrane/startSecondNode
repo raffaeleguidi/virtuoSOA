@@ -1,0 +1,1 @@
+java -jar -Dport=4001 -DhcPort=5702 -DhcMaster=localhost:5701 target/membrane-proxy-1.0-SNAPSHOT-capsule.jar

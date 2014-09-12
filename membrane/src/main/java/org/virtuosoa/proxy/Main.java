@@ -40,9 +40,9 @@ public class Main {
     public static ServiceProxy addRoute(Route route) throws IOException {
        	ServiceProxyKey key = new ServiceProxyKey(route.source, route.method, route.path, PORT); // <- should be one for GET (with a cache interceptor) and one for other methods 
     	ServiceProxy sp = new ServiceProxy(key, route.destination, route.destinationPort);
-    	sp.getInterceptors().add(new BaseVirtuosoInterceptor(route));
+    	sp.getInterceptors().add(new BaseVirtuosoInterceptor(route.key()));
     	if (route.cache > 0) {
-    		sp.getInterceptors().add(new CachingInterceptor(route));
+    		sp.getInterceptors().add(new CachingInterceptor(route.key(), route.cache));
     		log.info(" *** added cache on " + route.source + " for method " + route.method);
     	}
 		router.add(sp);

@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.virtuoSOA</groupId>
   <artifactId>membrane-proxy</artifactId>
-  <packaging>jar</packaging>
+  <packaging>war</packaging>
   <version>1.0-SNAPSHOT</version>
   <name>membrane-proxy</name>
   <url>http://maven.apache.org</url>
@@ -14,11 +14,13 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
+<!-- 
+     <dependency>
         <groupId>org.membrane-soa.service-proxy</groupId>
         <artifactId>service-proxy-core</artifactId>
         <version>4.0.17</version>
     </dependency>
+ -->
 	<dependency>
 		<groupId>com.hazelcast</groupId>
 		<artifactId>hazelcast-all</artifactId>
@@ -49,9 +51,62 @@
 	  <artifactId>fluent-hc</artifactId>
 	  <version>4.3.5</version>
 	</dependency>
+	<dependency>
+		<groupId>org.membrane-soa.service-proxy</groupId>
+		<artifactId>service-proxy-annot</artifactId>
+		<version>4.0.17</version>
+	</dependency>
+	<dependency>
+		<groupId>org.membrane-soa.service-proxy</groupId>
+		<artifactId>service-proxy-core</artifactId>
+		<version>4.0.17</version>
+	</dependency>
+	
+	<dependency>
+		<groupId>javax.servlet</groupId>
+		<artifactId>javax.servlet-api</artifactId>
+		<version>3.1.0</version>
+		<scope>provided</scope>
+	</dependency>
+
+	<dependency>
+		<groupId>xalan</groupId>
+		<artifactId>xalan</artifactId>
+		<version>2.7.2</version>
+	</dependency>
+	<dependency>
+		<groupId>commons-logging</groupId>
+		<artifactId>commons-logging</artifactId>
+		<version>1.2</version>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-beans</artifactId>
+		<version>4.1.0.RELEASE</version>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-web</artifactId>
+		<version>4.1.0.RELEASE</version>
+	</dependency>
+	<dependency>
+		<groupId>org.membrane-soa.service-proxy</groupId>
+		<artifactId>service-proxy-test</artifactId>
+		<scope>test</scope>
+		<version>4.0.17</version>
+	</dependency>
   </dependencies>
   <repositories>
     <repository>
+      <id>central</id>
+      <name>Maven Repository Switchboard</name>
+      <layout>default</layout>
+      <url>http://repo1.maven.org/maven2</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+     <repository>
         <id>predic8-releases</id>
         <url>http://repository.membrane-soa.org/content/groups/public</url>
     </repository>

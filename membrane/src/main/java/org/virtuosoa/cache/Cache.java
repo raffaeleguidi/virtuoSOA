@@ -16,7 +16,7 @@ public class Cache {
     public static long SECONDS = 1000;
     public static long MINUTES = SECONDS * 60;
     
-    private static Map<String, Expiring> map = null; //new ConcurrentHashMap<String, Expiring>();
+    private static Map<String, Expiring> map = new ConcurrentHashMap<String, Expiring>();
 
     public static Object get(String key) {
 		Expiring expiring = map.get(key);

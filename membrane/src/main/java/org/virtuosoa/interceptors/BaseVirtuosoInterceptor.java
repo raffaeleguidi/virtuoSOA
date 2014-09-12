@@ -4,7 +4,6 @@ import java.net.MalformedURLException;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
-import org.virtuosoa.cache.Cache;
 import org.virtuosoa.models.CheckResult;
 import org.virtuosoa.models.Route;
 import org.virtuosoa.proxy.HealthCheck;
@@ -14,10 +13,9 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.predic8.membrane.core.exchange.Exchange;
 import com.predic8.membrane.core.http.Response;
-import com.predic8.membrane.core.interceptor.AbstractInterceptor;
 import com.predic8.membrane.core.interceptor.Outcome;
 
-public class BaseVirtuosoInterceptor extends AbstractInterceptor {
+public class BaseVirtuosoInterceptor extends AbstractVirtuosoInterceptor {
 	private static final Logger log = Logger.getLogger(BaseVirtuosoInterceptor.class.getCanonicalName());
 	private final Meter requests = Main.metrics.meter("requests");
 	private final Meter responses = Main.metrics.meter("responses");
@@ -27,10 +25,15 @@ public class BaseVirtuosoInterceptor extends AbstractInterceptor {
 	
 	private String routeKey;
 	
-	public BaseVirtuosoInterceptor(Route route) {
-		routeKey = route.key();
-		routeRequests = Main.metrics.meter("requests_to:" + routeKey);
-		routeResponses = Main.metrics.meter("responses_to:" + routeKey);
+	public BaseVirtuosoInterceptor() {
+		routeRequests = Main.metrics.meter("requests_to:" + "empty");
+		routeResponses = Main.metrics.meter("responses_to:" + "empty");
+	}
+
+	public BaseVirtuosoInterceptor(String routeId) {
+		this.setId(routeId);
+		routeRequests = Main.metrics.meter("requests_to:" + routeId);
+		routeResponses = Main.metrics.meter("responses_to:" + routeId);
 	}
 
 	@Override public void handleAbort(Exchange exchange) {
